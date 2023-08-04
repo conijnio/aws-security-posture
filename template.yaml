@@ -1,0 +1,239 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform:
+  - AWS::Serverless-2016-10-31
+  - AWS::LanguageExtensions
+Description: SecurityPosture
+Parameters:
+
+  CollectInterval:
+    Description: The interval that is used to collect the findings
+    Type: String
+    Default: 12 hours
+    AllowedValues:
+      - 5 minutes
+      - 1 hour
+      - 3 hours
+      - 6 hours
+      - 12 hours
+      - 1 day
+
+Resources:
+
+  FindingsBucket:
+    Type: AWS::S3::Bucket
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      AccessControl: Private
+      LoggingConfiguration:
+        DestinationBucketName: !Sub logs-${AWS::AccountId}-${AWS::Region}
+        LogFilePrefix: !Sub ${AWS::StackName}/FindingsBucket/
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+
+  FindingsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FindingsBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AllowSSLRequestsOnly
+            Action: s3:*
+            Effect: Deny
+            Resource:
+              - !Sub ${FindingsBucket.Arn}
+              - !Sub ${FindingsBucket.Arn}/*
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+            Principal: "*"
+
+  StatesExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: !Sub states.${AWS::Region}.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: StatesExecutionPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource:
+                  - !GetAtt CollectFindingsFunction.Arn
+                  - !GetAtt CollectAccountsFunction.Arn
+                  - !GetAtt CalculateScoreFunction.Arn
+                  - !GetAtt PublishMetricsFunction.Arn
+
+  StateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      DefinitionUri: state_machine.asl.json
+      Role: !GetAtt StatesExecutionRole.Arn
+      Tracing:
+        Enabled: true
+      Events:
+        AWSBestPractices:
+          Type: ScheduleV2
+          Properties:
+            Name: AWSBestPractices
+            Description: Collect findings using the specified rate.
+            State: ENABLED
+            ScheduleExpression: !Sub rate(${CollectInterval})
+            ScheduleExpressionTimezone: Europe/Amsterdam
+            Input:
+              Fn::ToJsonString:
+                bucket: !Ref FindingsBucket
+                report: aws-foundational-security-best-practices
+                generator-id: aws-foundational-security-best-practices
+        CISFoundationsBenchmark:
+          Type: ScheduleV2
+          Properties:
+            Name: CISFoundationsBenchmark
+            Description: Collect findings using the specified rate.
+            State: ENABLED
+            ScheduleExpression: !Sub rate(${CollectInterval})
+            ScheduleExpressionTimezone: Europe/Amsterdam
+            Input:
+              Fn::ToJsonString:
+                bucket: !Ref FindingsBucket
+                report: cis-aws-foundations-benchmark
+                generator-id: arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark
+      DefinitionSubstitutions:
+        CollectFindingsFunction: !GetAtt CollectFindingsFunction.Arn
+        CollectAccountsFunction: !GetAtt CollectAccountsFunction.Arn
+        CalculateScoreFunction: !GetAtt CalculateScoreFunction.Arn
+        PublishMetricsFunction: !GetAtt PublishMetricsFunction.Arn
+
+  CollectFindingsFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      Architectures: [arm64]
+      Runtime: provided.al2
+      CodeUri: ./lambdas/collect-findings
+      Handler: bootstrap
+      Timeout: 300  # 5 Minutes
+
+  CollectFindingsPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Roles:
+        - !Ref CollectFindingsFunctionRole
+      PolicyName: AccessFindingsBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: s3:PutObject
+            Resource: !Sub ${FindingsBucket.Arn}/*
+          - Effect: Allow
+            Action: securityhub:GetFindings
+            Resource: !Sub arn:aws:securityhub:*:${AWS::AccountId}:hub/default
+
+  CollectFindingsLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${CollectFindingsFunction}
+      RetentionInDays: 7
+
+  CollectAccountsFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      Architectures: [arm64]
+      Runtime: provided.al2
+      CodeUri: ./lambdas/collect-accounts
+      Handler: bootstrap
+      Timeout: 300  # 5 Minutes
+
+  CollectAccountsPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Roles:
+        - !Ref CollectAccountsFunctionRole
+      PolicyName: AccessFindingsBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: s3:GetObject
+            Resource: !Sub ${FindingsBucket.Arn}/*
+
+  CollectAccountsLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${CollectAccountsFunction}
+      RetentionInDays: 7
+
+  CalculateScoreFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      Architectures: [arm64]
+      Runtime: provided.al2
+      CodeUri: ./lambdas/calculate-score
+      Handler: bootstrap
+      Timeout: 300  # 5 Minutes
+
+  CalculateScorePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Roles:
+        - !Ref CalculateScoreFunctionRole
+      PolicyName: AccessFindingsBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: s3:GetObject
+            Resource: !Sub ${FindingsBucket.Arn}/*
+
+  CalculateScoreLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${CalculateScoreFunction}
+      RetentionInDays: 7
+
+  PublishMetricsFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      Architectures: [ arm64 ]
+      Runtime: provided.al2
+      CodeUri: ./lambdas/publish-metrics
+      Handler: bootstrap
+      Timeout: 300  # 5 Minutes
+
+  PublishMetricsPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Roles:
+        - !Ref PublishMetricsFunctionRole
+      PolicyName: AccessFindingsBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: cloudwatch:PutMetricData
+            Resource: "*"
+
+  PublishMetricsLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${PublishMetricsFunction}
+      RetentionInDays: 7

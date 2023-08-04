@@ -1,0 +1,39 @@
+{
+  "StartAt": "CollectFindings",
+  "States": {
+    "CollectFindings": {
+      "Type": "Task",
+      "Resource": "${CollectFindingsFunction}",
+      "Next": "CollectAccounts"
+    },
+    "CollectAccounts": {
+      "Type": "Task",
+      "Resource": "${CollectAccountsFunction}",
+      "Next": "CalculateAccountScores"
+    },
+    "CalculateAccountScores": {
+      "Type": "Map",
+      "ItemProcessor": {
+        "ProcessorConfig": {
+          "Mode": "INLINE"
+        },
+        "StartAt": "CalculateScore",
+        "States": {
+          "CalculateScore": {
+            "Type": "Task",
+            "Resource": "${CalculateScoreFunction}",
+            "End": true
+          }
+        }
+      },
+      "ResultPath": "$.Accounts",
+      "ItemsPath": "$.Accounts",
+      "Next": "PublishMetrics"
+    },
+    "PublishMetrics": {
+      "Type": "Task",
+      "Resource": "${PublishMetricsFunction}",
+      "End": true
+    }
+  }
+}

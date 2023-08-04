@@ -1,0 +1,7 @@
+go 1.20
+
+use ./lambdas/collect-findings
+use ./lambdas/collect-accounts
+use ./lambdas/calculate-score
+use ./lambdas/publish-metrics
+use .

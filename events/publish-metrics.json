@@ -1,0 +1,15 @@
+{
+  "Report": "aws-foundational-security-best-practices",
+  "Timestamp": 1691920532,
+  "Bucket": "my-sample-bucket",
+  "Accounts": [
+    {
+      "AccountId": "111122223333",
+      "Score": 80
+    },
+    {
+      "AccountId": "333322221111",
+      "Score": 90
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+{
+    "bucket": "my-sample-bucket",
+    "report": "aws-foundational-security-best-practices",
+    "generator-id": "aws-foundational-security-best-practices"
+}

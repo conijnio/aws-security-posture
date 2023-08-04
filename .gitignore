@@ -1,0 +1,6 @@
+.env
+.aws-sam
+data
+reports
+events/*-payload.json
+coverage.out

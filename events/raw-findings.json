@@ -1,0 +1,751 @@
+[
+  {
+    "Action": null,
+    "AwsAccountId": "111122223333",
+    "CompanyName": "AWS",
+    "Compliance": {
+      "AssociatedStandards": [
+        {
+          "StandardsId": "ruleset/cis-aws-foundations-benchmark/v/1.2.0"
+        }
+      ],
+      "RelatedRequirements": null,
+      "SecurityControlId": "EC2.1",
+      "Status": "FAILED",
+      "StatusReasons": [
+        {
+          "Description": "AWS Config evaluated your resources against the rule. The rule did not apply to the AWS resources in its scope, the specified resources were deleted, or the evaluation results were deleted.",
+          "ReasonCode": "CONFIG_EVALUATIONS_EMPTY"
+        }
+      ]
+    },
+    "Confidence": null,
+    "CreatedAt": "2023-06-13T19:40:40.726Z",
+    "Criticality": null,
+    "Description": "A VPC comes with a default security group whose initial settings deny all inbound traffic, allow all outbound traffic, and allow all traffic between instances assigned to the security group. If you don't specify a security group when you launch an instance, the instance is automatically assigned to this default security group. It is recommended that the default security group restrict all traffic.",
+    "FindingProviderFields": {
+      "Confidence": null,
+      "Criticality": null,
+      "RelatedFindings": null,
+      "Severity": {
+        "Label": "INFORMATIONAL",
+        "Original": "INFORMATIONAL"
+      },
+      "Types": [
+        "Software and Configuration Checks/Industry and Regulatory Standards/CIS AWS Foundations Benchmark"
+      ]
+    },
+    "FirstObservedAt": "2023-06-13T19:40:40.726Z",
+    "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.3",
+    "Id": "arn:aws:securityhub:eu-west-1:111122223333:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
+    "LastObservedAt": "2023-08-02T21:23:39.225Z",
+    "Malware": null,
+    "Network": null,
+    "NetworkPath": null,
+    "Note": null,
+    "PatchSummary": null,
+    "Process": null,
+    "ProductArn": "arn:aws:securityhub:eu-west-1::product/aws/securityhub",
+    "ProductFields": {
+      "RecommendationUrl": "https://docs.aws.amazon.com/console/securityhub/EC2.2/remediation",
+      "RelatedAWSResources:0/name": "securityhub-vpc-default-security-group-closed-d2dc2b0c",
+      "RelatedAWSResources:0/type": "AWS::Config::ConfigRule",
+      "Resources:0/Id": "arn:aws:iam::111122223333:root",
+      "RuleId": "4.3",
+      "StandardsControlArn": "arn:aws:securityhub:eu-west-1:111122223333:control/cis-aws-foundations-benchmark/v/1.2.0/4.3",
+      "StandardsGuideArn": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0",
+      "StandardsGuideSubscriptionArn": "arn:aws:securityhub:eu-west-1:111122223333:subscription/cis-aws-foundations-benchmark/v/1.2.0",
+      "aws/securityhub/CompanyName": "AWS",
+      "aws/securityhub/FindingId": "arn:aws:securityhub:eu-west-1::product/aws/securityhub/arn:aws:securityhub:eu-west-1:111122223333:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
+      "aws/securityhub/ProductName": "Security Hub",
+      "aws/securityhub/annotation": "AWS Config evaluated your resources against the rule. The rule did not apply to the AWS resources in its scope, the specified resources were deleted, or the evaluation results were deleted."
+    },
+    "ProductName": "Security Hub",
+    "RecordState": "ACTIVE",
+    "Region": "eu-west-1",
+    "RelatedFindings": null,
+    "Remediation": {
+      "Recommendation": {
+        "Text": "For information on how to correct this issue, consult the AWS Security Hub controls documentation.",
+        "Url": "https://docs.aws.amazon.com/console/securityhub/EC2.2/remediation"
+      }
+    },
+    "Resources": [
+      {
+        "DataClassification": null,
+        "Details": null,
+        "Id": "AWS::::Account:111122223333",
+        "Partition": "aws",
+        "Region": "eu-west-1",
+        "ResourceRole": null,
+        "Tags": null,
+        "Type": "AwsAccount"
+      }
+    ],
+    "Sample": null,
+    "SchemaVersion": "2018-10-08",
+    "Severity": {
+      "Label": "INFORMATIONAL",
+      "Normalized": 0,
+      "Original": "INFORMATIONAL",
+      "Product": 0
+    },
+    "SourceUrl": null,
+    "ThreatIntelIndicators": null,
+    "Threats": null,
+    "Title": "4.3 Ensure the default security group of every VPC restricts all traffic",
+    "Types": [
+      "Software and Configuration Checks/Industry and Regulatory Standards/CIS AWS Foundations Benchmark"
+    ],
+    "UpdatedAt": "2023-08-02T21:23:27.815Z",
+    "UserDefinedFields": null,
+    "VerificationState": null,
+    "Vulnerabilities": null,
+    "Workflow": {
+      "Status": "RESOLVED"
+    },
+    "WorkflowState": "NEW"
+  },
+  {
+    "Action": null,
+    "AwsAccountId": "111122223333",
+    "CompanyName": "AWS",
+    "Compliance": {
+      "AssociatedStandards": [
+        {
+          "StandardsId": "ruleset/cis-aws-foundations-benchmark/v/1.2.0"
+        }
+      ],
+      "RelatedRequirements": null,
+      "SecurityControlId": "EC2.2",
+      "Status": "WARNING",
+      "StatusReasons": [
+        {
+          "Description": "AWS Config evaluated your resources against the rule. The rule did not apply to the AWS resources in its scope, the specified resources were deleted, or the evaluation results were deleted.",
+          "ReasonCode": "CONFIG_EVALUATIONS_EMPTY"
+        }
+      ]
+    },
+    "Confidence": null,
+    "CreatedAt": "2023-06-13T19:40:40.726Z",
+    "Criticality": null,
+    "Description": "A VPC comes with a default security group whose initial settings deny all inbound traffic, allow all outbound traffic, and allow all traffic between instances assigned to the security group. If you don't specify a security group when you launch an instance, the instance is automatically assigned to this default security group. It is recommended that the default security group restrict all traffic.",
+    "FindingProviderFields": {
+      "Confidence": null,
+      "Criticality": null,
+      "RelatedFindings": null,
+      "Severity": {
+        "Label": "INFORMATIONAL",
+        "Original": "INFORMATIONAL"
+      },
+      "Types": [
+        "Software and Configuration Checks/Industry and Regulatory Standards/CIS AWS Foundations Benchmark"
+      ]
+    },
+    "FirstObservedAt": "2023-06-13T19:40:40.726Z",
+    "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.3",
+    "Id": "arn:aws:securityhub:eu-west-1:111122223333:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
+    "LastObservedAt": "2023-08-02T21:23:39.225Z",
+    "Malware": null,
+    "Network": null,
+    "NetworkPath": null,
+    "Note": null,
+    "PatchSummary": null,
+    "Process": null,
+    "ProductArn": "arn:aws:securityhub:eu-west-1::product/aws/securityhub",
+    "ProductFields": {
+      "RecommendationUrl": "https://docs.aws.amazon.com/console/securityhub/EC2.2/remediation",
+      "RelatedAWSResources:0/name": "securityhub-vpc-default-security-group-closed-d2dc2b0c",
+      "RelatedAWSResources:0/type": "AWS::Config::ConfigRule",
+      "Resources:0/Id": "arn:aws:iam::111122223333:root",
+      "RuleId": "4.3",
+      "StandardsControlArn": "arn:aws:securityhub:eu-west-1:111122223333:control/cis-aws-foundations-benchmark/v/1.2.0/4.3",
+      "StandardsGuideArn": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0",
+      "StandardsGuideSubscriptionArn": "arn:aws:securityhub:eu-west-1:111122223333:subscription/cis-aws-foundations-benchmark/v/1.2.0",
+      "aws/securityhub/CompanyName": "AWS",
+      "aws/securityhub/FindingId": "arn:aws:securityhub:eu-west-1::product/aws/securityhub/arn:aws:securityhub:eu-west-1:111122223333:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
+      "aws/securityhub/ProductName": "Security Hub",
+      "aws/securityhub/annotation": "AWS Config evaluated your resources against the rule. The rule did not apply to the AWS resources in its scope, the specified resources were deleted, or the evaluation results were deleted."
+    },
+    "ProductName": "Security Hub",
+    "RecordState": "ACTIVE",
+    "Region": "eu-west-1",
+    "RelatedFindings": null,
+    "Remediation": {
+      "Recommendation": {
+        "Text": "For information on how to correct this issue, consult the AWS Security Hub controls documentation.",
+        "Url": "https://docs.aws.amazon.com/console/securityhub/EC2.2/remediation"
+      }
+    },
+    "Resources": [
+      {
+        "DataClassification": null,
+        "Details": null,
+        "Id": "AWS::::Account:111122223333",
+        "Partition": "aws",
+        "Region": "eu-west-1",
+        "ResourceRole": null,
+        "Tags": null,
+        "Type": "AwsAccount"
+      }
+    ],
+    "Sample": null,
+    "SchemaVersion": "2018-10-08",
+    "Severity": {
+      "Label": "INFORMATIONAL",
+      "Normalized": 0,
+      "Original": "INFORMATIONAL",
+      "Product": 0
+    },
+    "SourceUrl": null,
+    "ThreatIntelIndicators": null,
+    "Threats": null,
+    "Title": "4.3 Ensure the default security group of every VPC restricts all traffic",
+    "Types": [
+      "Software and Configuration Checks/Industry and Regulatory Standards/CIS AWS Foundations Benchmark"
+    ],
+    "UpdatedAt": "2023-08-02T21:23:27.815Z",
+    "UserDefinedFields": null,
+    "VerificationState": null,
+    "Vulnerabilities": null,
+    "Workflow": {
+      "Status": "RESOLVED"
+    },
+    "WorkflowState": "NEW"
+  },
+  {
+    "Action": null,
+    "AwsAccountId": "111122223333",
+    "CompanyName": "AWS",
+    "Compliance": {
+      "AssociatedStandards": [
+        {
+          "StandardsId": "ruleset/cis-aws-foundations-benchmark/v/1.2.0"
+        }
+      ],
+      "RelatedRequirements": null,
+      "SecurityControlId": "EC2.3",
+      "Status": "NOT_AVAILABLE",
+      "StatusReasons": [
+        {
+          "Description": "AWS Config evaluated your resources against the rule. The rule did not apply to the AWS resources in its scope, the specified resources were deleted, or the evaluation results were deleted.",
+          "ReasonCode": "CONFIG_EVALUATIONS_EMPTY"
+        }
+      ]
+    },
+    "Confidence": null,
+    "CreatedAt": "2023-06-13T19:40:40.726Z",
+    "Criticality": null,
+    "Description": "A VPC comes with a default security group whose initial settings deny all inbound traffic, allow all outbound traffic, and allow all traffic between instances assigned to the security group. If you don't specify a security group when you launch an instance, the instance is automatically assigned to this default security group. It is recommended that the default security group restrict all traffic.",
+    "FindingProviderFields": {
+      "Confidence": null,
+      "Criticality": null,
+      "RelatedFindings": null,
+      "Severity": {
+        "Label": "INFORMATIONAL",
+        "Original": "INFORMATIONAL"
+      },
+      "Types": [
+        "Software and Configuration Checks/Industry and Regulatory Standards/CIS AWS Foundations Benchmark"
+      ]
+    },
+    "FirstObservedAt": "2023-06-13T19:40:40.726Z",
+    "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.3",
+    "Id": "arn:aws:securityhub:eu-west-1:111122223333:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
+    "LastObservedAt": "2023-08-02T21:23:39.225Z",
+    "Malware": null,
+    "Network": null,
+    "NetworkPath": null,
+    "Note": null,
+    "PatchSummary": null,
+    "Process": null,
+    "ProductArn": "arn:aws:securityhub:eu-west-1::product/aws/securityhub",
+    "ProductFields": {
+      "RecommendationUrl": "https://docs.aws.amazon.com/console/securityhub/EC2.2/remediation",
+      "RelatedAWSResources:0/name": "securityhub-vpc-default-security-group-closed-d2dc2b0c",
+      "RelatedAWSResources:0/type": "AWS::Config::ConfigRule",
+      "Resources:0/Id": "arn:aws:iam::111122223333:root",
+      "RuleId": "4.3",
+      "StandardsControlArn": "arn:aws:securityhub:eu-west-1:111122223333:control/cis-aws-foundations-benchmark/v/1.2.0/4.3",
+      "StandardsGuideArn": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0",
+      "StandardsGuideSubscriptionArn": "arn:aws:securityhub:eu-west-1:111122223333:subscription/cis-aws-foundations-benchmark/v/1.2.0",
+      "aws/securityhub/CompanyName": "AWS",
+      "aws/securityhub/FindingId": "arn:aws:securityhub:eu-west-1::product/aws/securityhub/arn:aws:securityhub:eu-west-1:111122223333:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
+      "aws/securityhub/ProductName": "Security Hub",
+      "aws/securityhub/annotation": "AWS Config evaluated your resources against the rule. The rule did not apply to the AWS resources in its scope, the specified resources were deleted, or the evaluation results were deleted."
+    },
+    "ProductName": "Security Hub",
+    "RecordState": "ACTIVE",
+    "Region": "eu-west-1",
+    "RelatedFindings": null,
+    "Remediation": {
+      "Recommendation": {
+        "Text": "For information on how to correct this issue, consult the AWS Security Hub controls documentation.",
+        "Url": "https://docs.aws.amazon.com/console/securityhub/EC2.2/remediation"
+      }
+    },
+    "Resources": [
+      {
+        "DataClassification": null,
+        "Details": null,
+        "Id": "AWS::::Account:111122223333",
+        "Partition": "aws",
+        "Region": "eu-west-1",
+        "ResourceRole": null,
+        "Tags": null,
+        "Type": "AwsAccount"
+      }
+    ],
+    "Sample": null,
+    "SchemaVersion": "2018-10-08",
+    "Severity": {
+      "Label": "INFORMATIONAL",
+      "Normalized": 0,
+      "Original": "INFORMATIONAL",
+      "Product": 0
+    },
+    "SourceUrl": null,
+    "ThreatIntelIndicators": null,
+    "Threats": null,
+    "Title": "4.3 Ensure the default security group of every VPC restricts all traffic",
+    "Types": [
+      "Software and Configuration Checks/Industry and Regulatory Standards/CIS AWS Foundations Benchmark"
+    ],
+    "UpdatedAt": "2023-08-02T21:23:27.815Z",
+    "UserDefinedFields": null,
+    "VerificationState": null,
+    "Vulnerabilities": null,
+    "Workflow": {
+      "Status": "RESOLVED"
+    },
+    "WorkflowState": "NEW"
+  },
+  {
+    "Action": null,
+    "AwsAccountId": "111122223333",
+    "CompanyName": "AWS",
+    "Compliance": {
+      "AssociatedStandards": [
+        {
+          "StandardsId": "ruleset/cis-aws-foundations-benchmark/v/1.2.0"
+        }
+      ],
+      "RelatedRequirements": null,
+      "SecurityControlId": "EC2.4",
+      "Status": "PASSED",
+      "StatusReasons": [
+        {
+          "Description": "AWS Config evaluated your resources against the rule. The rule did not apply to the AWS resources in its scope, the specified resources were deleted, or the evaluation results were deleted.",
+          "ReasonCode": "CONFIG_EVALUATIONS_EMPTY"
+        }
+      ]
+    },
+    "Confidence": null,
+    "CreatedAt": "2023-06-13T19:40:40.726Z",
+    "Criticality": null,
+    "Description": "A VPC comes with a default security group whose initial settings deny all inbound traffic, allow all outbound traffic, and allow all traffic between instances assigned to the security group. If you don't specify a security group when you launch an instance, the instance is automatically assigned to this default security group. It is recommended that the default security group restrict all traffic.",
+    "FindingProviderFields": {
+      "Confidence": null,
+      "Criticality": null,
+      "RelatedFindings": null,
+      "Severity": {
+        "Label": "INFORMATIONAL",
+        "Original": "INFORMATIONAL"
+      },
+      "Types": [
+        "Software and Configuration Checks/Industry and Regulatory Standards/CIS AWS Foundations Benchmark"
+      ]
+    },
+    "FirstObservedAt": "2023-06-13T19:40:40.726Z",
+    "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.3",
+    "Id": "arn:aws:securityhub:eu-west-1:111122223333:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
+    "LastObservedAt": "2023-08-02T21:23:39.225Z",
+    "Malware": null,
+    "Network": null,
+    "NetworkPath": null,
+    "Note": null,
+    "PatchSummary": null,
+    "Process": null,
+    "ProductArn": "arn:aws:securityhub:eu-west-1::product/aws/securityhub",
+    "ProductFields": {
+      "RecommendationUrl": "https://docs.aws.amazon.com/console/securityhub/EC2.2/remediation",
+      "RelatedAWSResources:0/name": "securityhub-vpc-default-security-group-closed-d2dc2b0c",
+      "RelatedAWSResources:0/type": "AWS::Config::ConfigRule",
+      "Resources:0/Id": "arn:aws:iam::111122223333:root",
+      "RuleId": "4.3",
+      "StandardsControlArn": "arn:aws:securityhub:eu-west-1:111122223333:control/cis-aws-foundations-benchmark/v/1.2.0/4.3",
+      "StandardsGuideArn": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0",
+      "StandardsGuideSubscriptionArn": "arn:aws:securityhub:eu-west-1:111122223333:subscription/cis-aws-foundations-benchmark/v/1.2.0",
+      "aws/securityhub/CompanyName": "AWS",
+      "aws/securityhub/FindingId": "arn:aws:securityhub:eu-west-1::product/aws/securityhub/arn:aws:securityhub:eu-west-1:111122223333:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
+      "aws/securityhub/ProductName": "Security Hub",
+      "aws/securityhub/annotation": "AWS Config evaluated your resources against the rule. The rule did not apply to the AWS resources in its scope, the specified resources were deleted, or the evaluation results were deleted."
+    },
+    "ProductName": "Security Hub",
+    "RecordState": "ACTIVE",
+    "Region": "eu-west-1",
+    "RelatedFindings": null,
+    "Remediation": {
+      "Recommendation": {
+        "Text": "For information on how to correct this issue, consult the AWS Security Hub controls documentation.",
+        "Url": "https://docs.aws.amazon.com/console/securityhub/EC2.2/remediation"
+      }
+    },
+    "Resources": [
+      {
+        "DataClassification": null,
+        "Details": null,
+        "Id": "AWS::::Account:111122223333",
+        "Partition": "aws",
+        "Region": "eu-west-1",
+        "ResourceRole": null,
+        "Tags": null,
+        "Type": "AwsAccount"
+      }
+    ],
+    "Sample": null,
+    "SchemaVersion": "2018-10-08",
+    "Severity": {
+      "Label": "INFORMATIONAL",
+      "Normalized": 0,
+      "Original": "INFORMATIONAL",
+      "Product": 0
+    },
+    "SourceUrl": null,
+    "ThreatIntelIndicators": null,
+    "Threats": null,
+    "Title": "4.3 Ensure the default security group of every VPC restricts all traffic",
+    "Types": [
+      "Software and Configuration Checks/Industry and Regulatory Standards/CIS AWS Foundations Benchmark"
+    ],
+    "UpdatedAt": "2023-08-02T21:23:27.815Z",
+    "UserDefinedFields": null,
+    "VerificationState": null,
+    "Vulnerabilities": null,
+    "Workflow": {
+      "Status": "RESOLVED"
+    },
+    "WorkflowState": "NEW"
+  },
+  {
+    "Action": null,
+    "AwsAccountId": "333322221111",
+    "CompanyName": "AWS",
+    "Compliance": {
+      "AssociatedStandards": [
+        {
+          "StandardsId": "ruleset/cis-aws-foundations-benchmark/v/1.2.0"
+        }
+      ],
+      "RelatedRequirements": null,
+      "SecurityControlId": "EC2.4",
+      "Status": "PASSED",
+      "StatusReasons": [
+        {
+          "Description": "AWS Config evaluated your resources against the rule. The rule did not apply to the AWS resources in its scope, the specified resources were deleted, or the evaluation results were deleted.",
+          "ReasonCode": "CONFIG_EVALUATIONS_EMPTY"
+        }
+      ]
+    },
+    "Confidence": null,
+    "CreatedAt": "2023-06-13T19:40:40.726Z",
+    "Criticality": null,
+    "Description": "A VPC comes with a default security group whose initial settings deny all inbound traffic, allow all outbound traffic, and allow all traffic between instances assigned to the security group. If you don't specify a security group when you launch an instance, the instance is automatically assigned to this default security group. It is recommended that the default security group restrict all traffic.",
+    "FindingProviderFields": {
+      "Confidence": null,
+      "Criticality": null,
+      "RelatedFindings": null,
+      "Severity": {
+        "Label": "INFORMATIONAL",
+        "Original": "INFORMATIONAL"
+      },
+      "Types": [
+        "Software and Configuration Checks/Industry and Regulatory Standards/CIS AWS Foundations Benchmark"
+      ]
+    },
+    "FirstObservedAt": "2023-06-13T19:40:40.726Z",
+    "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.3",
+    "Id": "arn:aws:securityhub:eu-west-1:333322221111:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
+    "LastObservedAt": "2023-08-02T21:23:39.225Z",
+    "Malware": null,
+    "Network": null,
+    "NetworkPath": null,
+    "Note": null,
+    "PatchSummary": null,
+    "Process": null,
+    "ProductArn": "arn:aws:securityhub:eu-west-1::product/aws/securityhub",
+    "ProductFields": {
+      "RecommendationUrl": "https://docs.aws.amazon.com/console/securityhub/EC2.2/remediation",
+      "RelatedAWSResources:0/name": "securityhub-vpc-default-security-group-closed-d2dc2b0c",
+      "RelatedAWSResources:0/type": "AWS::Config::ConfigRule",
+      "Resources:0/Id": "arn:aws:iam::333322221111:root",
+      "RuleId": "4.3",
+      "StandardsControlArn": "arn:aws:securityhub:eu-west-1:333322221111:control/cis-aws-foundations-benchmark/v/1.2.0/4.3",
+      "StandardsGuideArn": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0",
+      "StandardsGuideSubscriptionArn": "arn:aws:securityhub:eu-west-1:333322221111:subscription/cis-aws-foundations-benchmark/v/1.2.0",
+      "aws/securityhub/CompanyName": "AWS",
+      "aws/securityhub/FindingId": "arn:aws:securityhub:eu-west-1::product/aws/securityhub/arn:aws:securityhub:eu-west-1:333322221111:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
+      "aws/securityhub/ProductName": "Security Hub",
+      "aws/securityhub/annotation": "AWS Config evaluated your resources against the rule. The rule did not apply to the AWS resources in its scope, the specified resources were deleted, or the evaluation results were deleted."
+    },
+    "ProductName": "Security Hub",
+    "RecordState": "ACTIVE",
+    "Region": "eu-west-1",
+    "RelatedFindings": null,
+    "Remediation": {
+      "Recommendation": {
+        "Text": "For information on how to correct this issue, consult the AWS Security Hub controls documentation.",
+        "Url": "https://docs.aws.amazon.com/console/securityhub/EC2.2/remediation"
+      }
+    },
+    "Resources": [
+      {
+        "DataClassification": null,
+        "Details": null,
+        "Id": "AWS::::Account:333322221111",
+        "Partition": "aws",
+        "Region": "eu-west-1",
+        "ResourceRole": null,
+        "Tags": null,
+        "Type": "AwsAccount"
+      }
+    ],
+    "Sample": null,
+    "SchemaVersion": "2018-10-08",
+    "Severity": {
+      "Label": "INFORMATIONAL",
+      "Normalized": 0,
+      "Original": "INFORMATIONAL",
+      "Product": 0
+    },
+    "SourceUrl": null,
+    "ThreatIntelIndicators": null,
+    "Threats": null,
+    "Title": "4.3 Ensure the default security group of every VPC restricts all traffic",
+    "Types": [
+      "Software and Configuration Checks/Industry and Regulatory Standards/CIS AWS Foundations Benchmark"
+    ],
+    "UpdatedAt": "2023-08-02T21:23:27.815Z",
+    "UserDefinedFields": null,
+    "VerificationState": null,
+    "Vulnerabilities": null,
+    "Workflow": {
+      "Status": "RESOLVED"
+    },
+    "WorkflowState": "NEW"
+  },
+  {
+    "Action": null,
+    "AwsAccountId": "333322221111",
+    "CompanyName": "AWS",
+    "Compliance": {
+      "AssociatedStandards": [
+        {
+          "StandardsId": "ruleset/cis-aws-foundations-benchmark/v/1.2.0"
+        }
+      ],
+      "RelatedRequirements": null,
+      "SecurityControlId": "EC2.5",
+      "Status": "PASSED",
+      "StatusReasons": [
+        {
+          "Description": "AWS Config evaluated your resources against the rule. The rule did not apply to the AWS resources in its scope, the specified resources were deleted, or the evaluation results were deleted.",
+          "ReasonCode": "CONFIG_EVALUATIONS_EMPTY"
+        }
+      ]
+    },
+    "Confidence": null,
+    "CreatedAt": "2023-06-13T19:40:40.726Z",
+    "Criticality": null,
+    "Description": "A VPC comes with a default security group whose initial settings deny all inbound traffic, allow all outbound traffic, and allow all traffic between instances assigned to the security group. If you don't specify a security group when you launch an instance, the instance is automatically assigned to this default security group. It is recommended that the default security group restrict all traffic.",
+    "FindingProviderFields": {
+      "Confidence": null,
+      "Criticality": null,
+      "RelatedFindings": null,
+      "Severity": {
+        "Label": "INFORMATIONAL",
+        "Original": "INFORMATIONAL"
+      },
+      "Types": [
+        "Software and Configuration Checks/Industry and Regulatory Standards/CIS AWS Foundations Benchmark"
+      ]
+    },
+    "FirstObservedAt": "2023-06-13T19:40:40.726Z",
+    "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.3",
+    "Id": "arn:aws:securityhub:eu-west-1:333322221111:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
+    "LastObservedAt": "2023-08-02T21:23:39.225Z",
+    "Malware": null,
+    "Network": null,
+    "NetworkPath": null,
+    "Note": null,
+    "PatchSummary": null,
+    "Process": null,
+    "ProductArn": "arn:aws:securityhub:eu-west-1::product/aws/securityhub",
+    "ProductFields": {
+      "RecommendationUrl": "https://docs.aws.amazon.com/console/securityhub/EC2.2/remediation",
+      "RelatedAWSResources:0/name": "securityhub-vpc-default-security-group-closed-d2dc2b0c",
+      "RelatedAWSResources:0/type": "AWS::Config::ConfigRule",
+      "Resources:0/Id": "arn:aws:iam::333322221111:root",
+      "RuleId": "4.3",
+      "StandardsControlArn": "arn:aws:securityhub:eu-west-1:333322221111:control/cis-aws-foundations-benchmark/v/1.2.0/4.3",
+      "StandardsGuideArn": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0",
+      "StandardsGuideSubscriptionArn": "arn:aws:securityhub:eu-west-1:333322221111:subscription/cis-aws-foundations-benchmark/v/1.2.0",
+      "aws/securityhub/CompanyName": "AWS",
+      "aws/securityhub/FindingId": "arn:aws:securityhub:eu-west-1::product/aws/securityhub/arn:aws:securityhub:eu-west-1:333322221111:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
+      "aws/securityhub/ProductName": "Security Hub",
+      "aws/securityhub/annotation": "AWS Config evaluated your resources against the rule. The rule did not apply to the AWS resources in its scope, the specified resources were deleted, or the evaluation results were deleted."
+    },
+    "ProductName": "Security Hub",
+    "RecordState": "ACTIVE",
+    "Region": "eu-west-1",
+    "RelatedFindings": null,
+    "Remediation": {
+      "Recommendation": {
+        "Text": "For information on how to correct this issue, consult the AWS Security Hub controls documentation.",
+        "Url": "https://docs.aws.amazon.com/console/securityhub/EC2.2/remediation"
+      }
+    },
+    "Resources": [
+      {
+        "DataClassification": null,
+        "Details": null,
+        "Id": "AWS::::Account:333322221111",
+        "Partition": "aws",
+        "Region": "eu-west-1",
+        "ResourceRole": null,
+        "Tags": null,
+        "Type": "AwsAccount"
+      }
+    ],
+    "Sample": null,
+    "SchemaVersion": "2018-10-08",
+    "Severity": {
+      "Label": "INFORMATIONAL",
+      "Normalized": 0,
+      "Original": "INFORMATIONAL",
+      "Product": 0
+    },
+    "SourceUrl": null,
+    "ThreatIntelIndicators": null,
+    "Threats": null,
+    "Title": "4.3 Ensure the default security group of every VPC restricts all traffic",
+    "Types": [
+      "Software and Configuration Checks/Industry and Regulatory Standards/CIS AWS Foundations Benchmark"
+    ],
+    "UpdatedAt": "2023-08-02T21:23:27.815Z",
+    "UserDefinedFields": null,
+    "VerificationState": null,
+    "Vulnerabilities": null,
+    "Workflow": {
+      "Status": "RESOLVED"
+    },
+    "WorkflowState": "NEW"
+  },
+  {
+    "Action": null,
+    "AwsAccountId": "333322221111",
+    "CompanyName": "AWS",
+    "Compliance": {
+      "AssociatedStandards": [
+        {
+          "StandardsId": "ruleset/cis-aws-foundations-benchmark/v/1.2.0"
+        }
+      ],
+      "RelatedRequirements": null,
+      "SecurityControlId": "EC2.6",
+      "Status": "PASSED",
+      "StatusReasons": [
+        {
+          "Description": "AWS Config evaluated your resources against the rule. The rule did not apply to the AWS resources in its scope, the specified resources were deleted, or the evaluation results were deleted.",
+          "ReasonCode": "CONFIG_EVALUATIONS_EMPTY"
+        }
+      ]
+    },
+    "Confidence": null,
+    "CreatedAt": "2023-06-13T19:40:40.726Z",
+    "Criticality": null,
+    "Description": "A VPC comes with a default security group whose initial settings deny all inbound traffic, allow all outbound traffic, and allow all traffic between instances assigned to the security group. If you don't specify a security group when you launch an instance, the instance is automatically assigned to this default security group. It is recommended that the default security group restrict all traffic.",
+    "FindingProviderFields": {
+      "Confidence": null,
+      "Criticality": null,
+      "RelatedFindings": null,
+      "Severity": {
+        "Label": "INFORMATIONAL",
+        "Original": "INFORMATIONAL"
+      },
+      "Types": [
+        "Software and Configuration Checks/Industry and Regulatory Standards/CIS AWS Foundations Benchmark"
+      ]
+    },
+    "FirstObservedAt": "2023-06-13T19:40:40.726Z",
+    "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.3",
+    "Id": "arn:aws:securityhub:eu-west-1:333322221111:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
+    "LastObservedAt": "2023-08-02T21:23:39.225Z",
+    "Malware": null,
+    "Network": null,
+    "NetworkPath": null,
+    "Note": null,
+    "PatchSummary": null,
+    "Process": null,
+    "ProductArn": "arn:aws:securityhub:eu-west-1::product/aws/securityhub",
+    "ProductFields": {
+      "RecommendationUrl": "https://docs.aws.amazon.com/console/securityhub/EC2.2/remediation",
+      "RelatedAWSResources:0/name": "securityhub-vpc-default-security-group-closed-d2dc2b0c",
+      "RelatedAWSResources:0/type": "AWS::Config::ConfigRule",
+      "Resources:0/Id": "arn:aws:iam::333322221111:root",
+      "RuleId": "4.3",
+      "StandardsControlArn": "arn:aws:securityhub:eu-west-1:333322221111:control/cis-aws-foundations-benchmark/v/1.2.0/4.3",
+      "StandardsGuideArn": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0",
+      "StandardsGuideSubscriptionArn": "arn:aws:securityhub:eu-west-1:333322221111:subscription/cis-aws-foundations-benchmark/v/1.2.0",
+      "aws/securityhub/CompanyName": "AWS",
+      "aws/securityhub/FindingId": "arn:aws:securityhub:eu-west-1::product/aws/securityhub/arn:aws:securityhub:eu-west-1:333322221111:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
+      "aws/securityhub/ProductName": "Security Hub",
+      "aws/securityhub/annotation": "AWS Config evaluated your resources against the rule. The rule did not apply to the AWS resources in its scope, the specified resources were deleted, or the evaluation results were deleted."
+    },
+    "ProductName": "Security Hub",
+    "RecordState": "ACTIVE",
+    "Region": "eu-west-1",
+    "RelatedFindings": null,
+    "Remediation": {
+      "Recommendation": {
+        "Text": "For information on how to correct this issue, consult the AWS Security Hub controls documentation.",
+        "Url": "https://docs.aws.amazon.com/console/securityhub/EC2.2/remediation"
+      }
+    },
+    "Resources": [
+      {
+        "DataClassification": null,
+        "Details": null,
+        "Id": "AWS::::Account:333322221111",
+        "Partition": "aws",
+        "Region": "eu-west-1",
+        "ResourceRole": null,
+        "Tags": null,
+        "Type": "AwsAccount"
+      }
+    ],
+    "Sample": null,
+    "SchemaVersion": "2018-10-08",
+    "Severity": {
+      "Label": "INFORMATIONAL",
+      "Normalized": 0,
+      "Original": "INFORMATIONAL",
+      "Product": 0
+    },
+    "SourceUrl": null,
+    "ThreatIntelIndicators": null,
+    "Threats": null,
+    "Title": "4.3 Ensure the default security group of every VPC restricts all traffic",
+    "Types": [
+      "Software and Configuration Checks/Industry and Regulatory Standards/CIS AWS Foundations Benchmark"
+    ],
+    "UpdatedAt": "2023-08-02T21:23:27.815Z",
+    "UserDefinedFields": null,
+    "VerificationState": null,
+    "Vulnerabilities": null,
+    "Workflow": {
+      "Status": "RESOLVED"
+    },
+    "WorkflowState": "NEW"
+  }
+]
