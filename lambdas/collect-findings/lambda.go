@@ -114,7 +114,7 @@ func (x *Lambda) resolveBucketKey(prefix string, report string) string {
 		prefix,
 		fmt.Sprintf("%d", int(t.Year())),
 		fmt.Sprintf("%02d", int(t.Month())),
-		fmt.Sprintf("%d", int(t.Day())),
+		fmt.Sprintf("%02d", t.Day()),
 		fmt.Sprintf("%d.json", t.Unix()),
 	)
 }
