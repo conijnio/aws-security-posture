@@ -81,7 +81,7 @@ func (x *Lambda) downloadFindings(standard string) ([]byte, error) {
 
 	paginator := securityhub.NewGetFindingsPaginator(x.securityHubClient, x.getFindingsForStandard(standard))
 	pageNum := 0
-	for paginator.HasMorePages() && pageNum < 3 {
+	for paginator.HasMorePages() {
 		page, err := paginator.NextPage(x.ctx)
 		if err != nil {
 			return nil, err
