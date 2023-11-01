@@ -112,7 +112,7 @@ func (x *Lambda) resolveBucketKey(prefix string, report string) string {
 	return filepath.Join(
 		report,
 		prefix,
-		fmt.Sprintf("%d", int(t.Year())),
+		fmt.Sprintf("%d", t.Year()),
 		fmt.Sprintf("%02d", int(t.Month())),
 		fmt.Sprintf("%02d", t.Day()),
 		fmt.Sprintf("%d.json", t.Unix()),

@@ -114,14 +114,14 @@ func (x *Lambda) uploadFile(accountId string, data []byte) (string, error) {
 
 func (x *Lambda) resolveBucketKey(accountId string) string {
 	request := x.ctx.Value("request").(Request)
-	tm := time.Unix(request.Timestamp, 0)
+	t := time.Unix(request.Timestamp, 0)
 
 	return filepath.Join(
 		request.Report,
 		accountId,
-		fmt.Sprintf("%d", int(tm.Year())),
-		fmt.Sprintf("%02d", int(tm.Month())),
-		fmt.Sprintf("%d", int(tm.Day())),
-		fmt.Sprintf("%d.json", tm.Unix()),
+		fmt.Sprintf("%d", t.Year()),
+		fmt.Sprintf("%02d", int(t.Month())),
+		fmt.Sprintf("%d", t.Day()),
+		fmt.Sprintf("%d.json", t.Unix()),
 	)
 }
