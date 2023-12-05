@@ -4,11 +4,74 @@
     "CollectFindings": {
       "Type": "Task",
       "Resource": "${CollectFindingsFunction}",
-      "Next": "CollectAccounts"
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 1
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.DataLimitExceeded",
+            "States.ExceedToleratedFailureThreshold",
+            "States.Permissions"
+          ],
+          "Next": "FailState"
+        }
+      ],
+      "Next": "AggregationRequired"
+    },
+    "AggregationRequired": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.FindingCount",
+          "NumericGreaterThanEquals": 100,
+          "Next": "AggregateFindings"
+        }
+      ],
+      "Default": "HasNextToken"
+    },
+    "AggregateFindings": {
+      "Type": "Task",
+      "Resource": "${AggregateFindingsFunction}",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.Permissions"
+          ],
+          "Next": "FailState"
+        }
+      ],
+      "Next": "HasNextToken"
+    },
+    "HasNextToken": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.NextToken",
+          "StringEquals": "",
+          "Next": "CollectAccounts"
+        }
+      ],
+      "Default": "CollectFindings"
     },
     "CollectAccounts": {
       "Type": "Task",
       "Resource": "${CollectAccountsFunction}",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.Permissions"
+          ],
+          "Next": "FailState"
+        }
+      ],
       "Next": "CalculateAccountScores"
     },
     "CalculateAccountScores": {
@@ -17,8 +80,13 @@
         "ProcessorConfig": {
           "Mode": "INLINE"
         },
-        "StartAt": "CalculateScore",
+        "StartAt": "WorkloadContext",
         "States": {
+          "WorkloadContext": {
+            "Type": "Task",
+            "Resource": "${WorkloadContextFunction}",
+            "Next": "CalculateScore"
+          },
           "CalculateScore": {
             "Type": "Task",
             "Resource": "${CalculateScoreFunction}",
@@ -28,12 +96,33 @@
       },
       "ResultPath": "$.Accounts",
       "ItemsPath": "$.Accounts",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.Permissions"
+          ],
+          "Next": "FailState"
+        }
+      ],
       "Next": "PublishMetrics"
     },
     "PublishMetrics": {
       "Type": "Task",
       "Resource": "${PublishMetricsFunction}",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.Permissions"
+          ],
+          "Next": "FailState"
+        }
+      ],
       "End": true
+    },
+    "FailState": {
+      "Type": "Fail",
+      "CausePath": "$.Cause",
+      "ErrorPath": "$.Error"
     }
   }
 }

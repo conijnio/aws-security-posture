@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 	"github.com/awsdocs/aws-doc-sdk-examples/gov2/testtools"
+	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 	"time"
@@ -21,7 +22,7 @@ func readEvent(path string) Request {
 	return event
 }
 
-func PutMetricDataInput(report string, accountId string, score float64) *cloudwatch.PutMetricDataInput {
+func PutMetricDataInput(report string, workload string, environment string, score float64, controls int, findings int) *cloudwatch.PutMetricDataInput {
 	return &cloudwatch.PutMetricDataInput{
 		Namespace: aws.String("SecurityPosture"),
 		MetricData: []types.MetricDatum{
@@ -34,11 +35,56 @@ func PutMetricDataInput(report string, accountId string, score float64) *cloudwa
 						Value: aws.String(report),
 					},
 					types.Dimension{
-						Name:  aws.String("AccountId"),
-						Value: aws.String(accountId),
+						Name:  aws.String("Workload"),
+						Value: aws.String(workload),
+					},
+					types.Dimension{
+						Name:  aws.String("Environment"),
+						Value: aws.String(environment),
 					},
 				},
 				Value: aws.Float64(score),
+				Unit:  types.StandardUnitPercent,
+			},
+			types.MetricDatum{
+				Timestamp:  aws.Time(time.Unix(1691920532, 0)),
+				MetricName: aws.String("Controls"),
+				Dimensions: []types.Dimension{
+					types.Dimension{
+						Name:  aws.String("Report"),
+						Value: aws.String(report),
+					},
+					types.Dimension{
+						Name:  aws.String("Workload"),
+						Value: aws.String(workload),
+					},
+					types.Dimension{
+						Name:  aws.String("Environment"),
+						Value: aws.String(environment),
+					},
+				},
+				Value: aws.Float64(float64(controls)),
+				Unit:  types.StandardUnitCount,
+			},
+			types.MetricDatum{
+				Timestamp:  aws.Time(time.Unix(1691920532, 0)),
+				MetricName: aws.String("Findings"),
+				Dimensions: []types.Dimension{
+					types.Dimension{
+						Name:  aws.String("Report"),
+						Value: aws.String(report),
+					},
+					types.Dimension{
+						Name:  aws.String("Workload"),
+						Value: aws.String(workload),
+					},
+					types.Dimension{
+						Name:  aws.String("Environment"),
+						Value: aws.String(environment),
+					},
+				},
+				Value: aws.Float64(float64(findings)),
+				Unit:  types.StandardUnitCount,
 			},
 		},
 	}
@@ -56,21 +102,18 @@ func TestHandler(t *testing.T) {
 
 		stubber.Add(testtools.Stub{
 			OperationName: "PutMetricData",
-			Input:         PutMetricDataInput("aws-foundational-security-best-practices", "111122223333", 80),
+			Input:         PutMetricDataInput("aws-foundational-security-best-practices", "my-workload", "development", 80, 10, 20000),
 			Output:        &cloudwatch.PutMetricDataOutput{},
 		})
 		stubber.Add(testtools.Stub{
 			OperationName: "PutMetricData",
-			Input:         PutMetricDataInput("aws-foundational-security-best-practices", "333322221111", 90),
+			Input:         PutMetricDataInput("aws-foundational-security-best-practices", "my-workload", "test", 90, 14, 120000),
 			Output:        &cloudwatch.PutMetricDataOutput{},
 		})
 
 		_, err := lambda.Handler(ctx, event)
 		testtools.ExitTest(stubber, t)
-
-		if err != nil {
-			t.Errorf("Expected nil, but got %q", err)
-		}
+		assert.NoError(t, err)
 	})
 
 	t.Run("Fail on PutMetricData", func(t *testing.T) {
@@ -79,7 +122,7 @@ func TestHandler(t *testing.T) {
 		raiseErr := &testtools.StubError{Err: errors.New("failed")}
 		stubber.Add(testtools.Stub{
 			OperationName: "PutMetricData",
-			Input:         PutMetricDataInput("aws-foundational-security-best-practices", "333322221111", 90),
+			Input:         PutMetricDataInput("aws-foundational-security-best-practices", "my-workload", "development", 90, 0, 0),
 			Error:         raiseErr,
 		})
 

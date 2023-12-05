@@ -2,5 +2,10 @@
   "Bucket": "my-sample-bucket",
   "Report": "aws-foundational-security-best-practices",
   "Timestamp": 1691920532,
-  "Key": "aws-foundational-security-best-practices/raw/2023/08/13/111111111111.json"
+  "NextToken": "",
+  "Findings": [
+    "aws-foundational-security-best-practices/raw/2023/08/13/dfcec91a-9380-11ee-b9d1-0242ac120002.json",
+    "aws-foundational-security-best-practices/raw/2023/08/13/e43e3ef4-9380-11ee-b9d1-0242ac120002.json",
+    "aws-foundational-security-best-practices/raw/2023/08/13/e88c8e3e-9380-11ee-b9d1-0242ac120002.json"
+  ]
 }

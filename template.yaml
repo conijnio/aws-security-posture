@@ -5,6 +5,11 @@ Transform:
 Description: SecurityPosture
 Parameters:
 
+  Prefix:
+    Description: Common prefix applied to all resources
+    Type: String
+    Default: aws-security-posture
+
   CollectInterval:
     Description: The interval that is used to collect the findings
     Type: String
@@ -17,22 +22,72 @@ Parameters:
       - 12 hours
       - 1 day
 
+  PlatformAccounts:
+    Description: Platform accounts that do not have the environment as a postfix but due contain a dash in the name. For example prefix-log-archive, this will break the logic.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /landingzone/security-posture/platform-accounts
+
+  LoggingBucket:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /landingzone/s3-access-logging/bucket-name
+
+  NotificationsArn:
+    Description: The SNS topic ARN used to configure the alarms.
+    Type: String
+    Default: ""
+
+  PermissionBoundaryArn:
+    Description: The ARN of the permissions boundary that will be applied to the IAM Roles.
+    Type: String
+    Default: ""
+
+#  OrganizationId:
+#    Type: AWS::SSM::Parameter::Value<String>
+#    Default: /landingzone/generic/organization-id
+
+Conditions:
+  hasNotificationsArn: !Not
+    - !Equals
+      - !Ref NotificationsArn
+      - ""
+
+  hasPermissionBoundaryArn: !Not
+    - !Equals
+      - !Ref PermissionBoundaryArn
+      - ""
+
 Resources:
 
   FindingsBucket:
     Type: AWS::S3::Bucket
-    UpdateReplacePolicy: Retain
-    DeletionPolicy: Retain
     Properties:
-      AccessControl: Private
+      BucketName: !Sub ${Prefix}-${AWS::Region}
       LoggingConfiguration:
-        DestinationBucketName: !Sub logs-${AWS::AccountId}-${AWS::Region}
-        LogFilePrefix: !Sub ${AWS::StackName}/FindingsBucket/
+        DestinationBucketName: !Ref LoggingBucket
+        TargetObjectKeyFormat:
+          PartitionedPrefix:
+            PartitionDateSource: EventTime
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !Ref KmsKey
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerPreferred
       PublicAccessBlockConfiguration:
         BlockPublicAcls: True
         BlockPublicPolicy: True
         IgnorePublicAcls: True
         RestrictPublicBuckets: True
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpirationPolicy_ID
+            Status: Enabled
+            ExpirationInDays: 14
+            NoncurrentVersionExpirationInDays: 1
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 1
 
   FindingsBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -55,6 +110,8 @@ Resources:
   StatesExecutionRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Sub ${Prefix}-states-execution-${AWS::Region}
+      PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -71,13 +128,16 @@ Resources:
                 Action: lambda:InvokeFunction
                 Resource:
                   - !GetAtt CollectFindingsFunction.Arn
+                  - !GetAtt AggregateFindingsFunction.Arn
                   - !GetAtt CollectAccountsFunction.Arn
+                  - !GetAtt WorkloadContextFunction.Arn
                   - !GetAtt CalculateScoreFunction.Arn
                   - !GetAtt PublishMetricsFunction.Arn
 
   StateMachine:
     Type: AWS::Serverless::StateMachine
     Properties:
+      Name: !Sub ${Prefix}-security-score
       DefinitionUri: state_machine.asl.json
       Role: !GetAtt StatesExecutionRole.Arn
       Tracing:
@@ -88,50 +148,164 @@ Resources:
           Properties:
             Name: AWSBestPractices
             Description: Collect findings using the specified rate.
+            PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
             State: ENABLED
             ScheduleExpression: !Sub rate(${CollectInterval})
             ScheduleExpressionTimezone: Europe/Amsterdam
             Input:
               Fn::ToJsonString:
-                bucket: !Ref FindingsBucket
-                report: aws-foundational-security-best-practices
-                generator-id: aws-foundational-security-best-practices
+                Bucket: !Ref FindingsBucket
+                Report: aws-foundational-security-best-practices
+                Filter:
+                  GeneratorId:
+                    - Comparison: PREFIX
+                      Value: aws-foundational-security-best-practices
+                  RecordState:
+                    - Comparison: NOT_EQUALS
+                      Value: ARCHIVED
+                  WorkflowStatus:
+                    - Comparison: NOT_EQUALS
+                      Value: SUPPRESSED
         CISFoundationsBenchmark:
           Type: ScheduleV2
           Properties:
             Name: CISFoundationsBenchmark
             Description: Collect findings using the specified rate.
+            PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
             State: ENABLED
             ScheduleExpression: !Sub rate(${CollectInterval})
             ScheduleExpressionTimezone: Europe/Amsterdam
             Input:
               Fn::ToJsonString:
-                bucket: !Ref FindingsBucket
-                report: cis-aws-foundations-benchmark
-                generator-id: arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark
+                Bucket: !Ref FindingsBucket
+                Report: cis-aws-foundations-benchmark
+                Filter:
+                  GeneratorId:
+                    - Comparison: PREFIX
+                      Value: arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark
+                  RecordState:
+                    - Comparison: NOT_EQUALS
+                      Value: ARCHIVED
+                  WorkflowStatus:
+                    - Comparison: NOT_EQUALS
+                      Value: SUPPRESSED
       DefinitionSubstitutions:
+        AggregationSize: 100
         CollectFindingsFunction: !GetAtt CollectFindingsFunction.Arn
+        AggregateFindingsFunction: !GetAtt AggregateFindingsFunction.Arn
         CollectAccountsFunction: !GetAtt CollectAccountsFunction.Arn
+        WorkloadContextFunction: !GetAtt WorkloadContextFunction.Arn
         CalculateScoreFunction: !GetAtt CalculateScoreFunction.Arn
         PublishMetricsFunction: !GetAtt PublishMetricsFunction.Arn
+
+  StateMachineExecutionsFailedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmName: !Sub ${Prefix}-security-score-failed-executions
+      AlarmDescription: Notify the platform team when an execution of the security posture has failed, this impacts the dashboards in the observability platform.
+      AlarmActions:
+        - !If [hasNotificationsArn, !Ref NotificationsArn, !Ref AWS::NoValue]
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: ExecutionsFailed
+      Namespace: AWS/States
+      Statistic: Maximum
+      Threshold: 1
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: StateMachineArn
+          Value: !Ref StateMachine
+      Period: 60
+      TreatMissingData: notBreaching
+
+  StateMachineExecutionsTimedOutAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmName: !Sub ${Prefix}-security-score-executions-timed-out
+      AlarmDescription: Notify the platform team when an execution of the security posture has been timed out, this impacts the dashboards in the observability platform.
+      AlarmActions:
+        - !If [hasNotificationsArn, !Ref NotificationsArn, !Ref AWS::NoValue]
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: ExecutionsTimedOut
+      Namespace: AWS/States
+      Statistic: Maximum
+      Threshold: 1
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: StateMachineArn
+          Value: !Ref StateMachine
+      Period: 60
+      TreatMissingData: notBreaching
+
+  StateMachineExecutionThrottledAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmName: !Sub ${Prefix}-security-score-executions-throttled
+      AlarmDescription: Notify the platform team when an execution of the security posture has been throttled, this impacts the dashboards in the observability platform.
+      AlarmActions:
+        - !If [hasNotificationsArn, !Ref NotificationsArn, !Ref AWS::NoValue]
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: ExecutionThrottled
+      Namespace: AWS/States
+      Statistic: Maximum
+      Threshold: 1
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: StateMachineArn
+          Value: !Ref StateMachine
+      Period: 60
+      TreatMissingData: notBreaching
+
+  StateMachineExecutionTimeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmName: !Sub ${Prefix}-security-score-execution-time
+      AlarmDescription: Notify the platform team when an execution of the security posture has exceeded the threshold. This could indicate a potential problem in the future.
+      AlarmActions:
+        - !If [hasNotificationsArn, !Ref NotificationsArn, !Ref AWS::NoValue]
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: 1
+      MetricName: ExecutionTime
+      Namespace: AWS/States
+      Statistic: Maximum
+      Threshold: 1800000 # 1,800,000ms is 30 minutes
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: StateMachineArn
+          Value: !Ref StateMachine
+      Period: 60
+      TreatMissingData: notBreaching
+
+  ##################
+  # Collect Findings
+  ##################
 
   CollectFindingsFunction:
     Type: AWS::Serverless::Function
     Metadata:
       BuildMethod: makefile
     Properties:
+      PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
+      FunctionName: !Sub ${Prefix}-collect-findings
       Architectures: [arm64]
       Runtime: provided.al2
       CodeUri: ./lambdas/collect-findings
       Handler: bootstrap
-      Timeout: 300  # 5 Minutes
+      Timeout: 60  # 1 Minute, we only fetch 100 records per invocation
+      MemorySize: 8192
 
   CollectFindingsPolicy:
     Type: AWS::IAM::Policy
     Properties:
       Roles:
         - !Ref CollectFindingsFunctionRole
-      PolicyName: AccessFindingsBucket
+      PolicyName: !Sub ${Prefix}-collect-findings
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -146,25 +320,76 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/lambda/${CollectFindingsFunction}
+      KmsKeyId: !GetAtt KmsKey.Arn
       RetentionInDays: 7
+
+  ####################
+  # Aggregate Findings
+  ####################
+
+  AggregateFindingsFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
+      FunctionName: !Sub ${Prefix}-aggregate-findings
+      Architectures: [arm64]
+      Runtime: provided.al2
+      CodeUri: ./lambdas/aggregate-findings
+      Handler: bootstrap
+      Timeout: 300  # 5 Minutes, collect current findings and merge them
+      MemorySize: 1024
+
+  AggregateFindingsPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Roles:
+        - !Ref AggregateFindingsFunctionRole
+      PolicyName: !Sub ${Prefix}-aggregate-findings
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+              - s3:GetObject
+            Resource: !Sub ${FindingsBucket.Arn}/*
+          - Effect: Allow
+            Action: securityhub:GetFindings
+            Resource: !Sub arn:aws:securityhub:*:${AWS::AccountId}:hub/default
+
+  AggregateFindingsLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AggregateFindingsFunction}
+      KmsKeyId: !GetAtt KmsKey.Arn
+      RetentionInDays: 7
+
+  ##################
+  # Collect Accounts
+  ##################
 
   CollectAccountsFunction:
     Type: AWS::Serverless::Function
     Metadata:
       BuildMethod: makefile
     Properties:
+      PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
+      FunctionName: !Sub ${Prefix}-collect-accounts
       Architectures: [arm64]
       Runtime: provided.al2
       CodeUri: ./lambdas/collect-accounts
       Handler: bootstrap
-      Timeout: 300  # 5 Minutes
+      Timeout: 900  # 15 Minutes, this will process all files stored on S3 by the CollectFindings action.
+      MemorySize: 8192
 
   CollectAccountsPolicy:
     Type: AWS::IAM::Policy
     Properties:
       Roles:
         - !Ref CollectAccountsFunctionRole
-      PolicyName: AccessFindingsBucket
+      PolicyName: !Sub ${Prefix}-collect-accounts
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -178,25 +403,76 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/lambda/${CollectAccountsFunction}
+      KmsKeyId: !GetAtt KmsKey.Arn
       RetentionInDays: 7
+
+  ##################
+  # Workload Context
+  ##################
+
+  WorkloadContextFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
+      FunctionName: !Sub ${Prefix}-workload-context
+      Architectures: [ arm64 ]
+      Runtime: provided.al2
+      CodeUri: ./lambdas/workload-context
+      Handler: bootstrap
+      Timeout: 60  # 1 Minute, we are only fetching the account name.
+      MemorySize: 128
+      Environment:
+        Variables:
+          PLATFORM_ACCOUNTS: !Ref PlatformAccounts
+
+  WorkloadContextPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Roles:
+        - !Ref WorkloadContextFunctionRole
+      PolicyName: !Sub ${Prefix}-read-access-findings-bucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: organizations:DescribeAccount
+            Resource: "*"
+  #           Note: the following resource did not work, we need to look into limiting this.
+  #            Resource: !Sub arn:aws:organizations::${AWS::AccountId}:account/${OrganizationId}/*
+
+  WorkloadContextLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${WorkloadContextFunction}
+      KmsKeyId: !GetAtt KmsKey.Arn
+      RetentionInDays: 7
+
+  ###############
+  # Collect Score
+  ###############
 
   CalculateScoreFunction:
     Type: AWS::Serverless::Function
     Metadata:
       BuildMethod: makefile
     Properties:
+      PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
+      FunctionName: !Sub ${Prefix}-calculate-score
       Architectures: [arm64]
       Runtime: provided.al2
       CodeUri: ./lambdas/calculate-score
       Handler: bootstrap
-      Timeout: 300  # 5 Minutes
+      Timeout: 60  # 1 Minute, this function gets a specific per account payload.
+      MemorySize: 2048
 
   CalculateScorePolicy:
     Type: AWS::IAM::Policy
     Properties:
       Roles:
         - !Ref CalculateScoreFunctionRole
-      PolicyName: AccessFindingsBucket
+      PolicyName: !Sub ${Prefix}-read-access-findings-bucket
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -208,25 +484,33 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/lambda/${CalculateScoreFunction}
+      KmsKeyId: !GetAtt KmsKey.Arn
       RetentionInDays: 7
+
+  #################
+  # Publish Metrics
+  #################
 
   PublishMetricsFunction:
     Type: AWS::Serverless::Function
     Metadata:
       BuildMethod: makefile
     Properties:
+      PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
+      FunctionName: !Sub ${Prefix}-publish-metrics
       Architectures: [ arm64 ]
       Runtime: provided.al2
       CodeUri: ./lambdas/publish-metrics
       Handler: bootstrap
-      Timeout: 300  # 5 Minutes
+      Timeout: 60  # 1 Minute, we publish all metrics one by one for now
+      MemorySize: 2048
 
   PublishMetricsPolicy:
     Type: AWS::IAM::Policy
     Properties:
       Roles:
         - !Ref PublishMetricsFunctionRole
-      PolicyName: AccessFindingsBucket
+      PolicyName: !Sub ${Prefix}-publish-metrics
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -238,4 +522,110 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/lambda/${PublishMetricsFunction}
+      KmsKeyId: !GetAtt KmsKey.Arn
       RetentionInDays: 7
+
+  #########
+  # KMS Key
+  #########
+
+  KmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: Secrets Manager encryption Key for gitlab mirror user credentials store secret
+      EnableKeyRotation: true
+      Enabled: true
+      KeyPolicy:
+        Id: key-policy
+        Version: '2012-10-17'
+        Statement:
+          - Sid: Allow IAM access
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action:
+              - kms:Describe*
+              - kms:List*
+              - kms:Get*
+            Resource: "*"
+          - Sid: Allow administration of the key - DO NOT DELETE OR UPDATE
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action:
+              - kms:Create*
+              - kms:Describe*
+              - kms:Enable*
+              - kms:List*
+              - kms:Put*
+              - kms:Update*
+              - kms:Revoke*
+              - kms:Disable*
+              - kms:Get*
+              - kms:Delete*
+              - kms:ScheduleKeyDeletion
+              - kms:CancelKeyDeletion
+              - kms:TagResource
+              - kms:UntagResource
+            Resource: "*"
+            Condition:
+              ArnLike:
+                aws:PrincipalArn: !Sub arn:aws:iam::${AWS::AccountId}:role/aws-reserved/sso.amazonaws.com/*/AWSReservedSSO_PlatformDeveloper_*
+          - Sid: Allow access for Key Administrator
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action:
+              - kms:Create*
+              - kms:Describe*
+              - kms:Enable*
+              - kms:List*
+              - kms:Put*
+              - kms:Update*
+              - kms:Revoke*
+              - kms:Disable*
+              - kms:Get*
+              - kms:Delete*
+              - kms:TagResource
+              - kms:UntagResource
+              - kms:ScheduleKeyDeletion
+              - kms:CancelKeyDeletion
+            Resource: "*"
+            Condition:
+              ArnLike:
+                aws:PrincipalArn:
+                  - !Sub arn:aws:iam::${AWS::AccountId}:role/cloudformation-execution-role
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Resource: "*"
+            Condition:
+              StringEquals:
+                kms:CallerAccount: !Ref AWS::AccountId
+                kms:ViaService:
+                  - !Sub s3.${AWS::Region}.amazonaws.com
+          - Sid: Allow access for Logs Service Principal
+            Effect: Allow
+            Principal:
+              Service: !Sub logs.${AWS::Region}.amazonaws.com
+            Action:
+              - kms:Encrypt*
+              - kms:Decrypt*
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+              - kms:Describe*
+            Resource: "*"
+            Condition:
+              ArnLike:
+                kms:EncryptionContext:aws:logs:arn: !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*:*
+  KmsKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${Prefix}
+      TargetKeyId: !Ref KmsKey

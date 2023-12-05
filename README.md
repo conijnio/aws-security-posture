@@ -8,12 +8,29 @@
 
 - Collect all the findings for the given generator.
 - Collect all accounts based on the findings.
-- Calculate the compliance score for each account based on the account findings.
+- For each account based on the account findings:
+  - Fetch the account name and determine the workload name and environment.
+  - Calculate the compliance score.
 - Publish the score as CloudWatch Metrics.
 
-## Supported Generators
+## Filters
 
-By default, the following generators are used to generate the compliance scores: 
+The state machine accepts a filter, the format of this filter is the [SecurityHub filter](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_AwsSecurityFindingFilters.html)
+itself. So to get all `CIS AWS Foundations benchmark` findings you can use the following filter:
+
+```yaml
+GeneratorId:
+  - Comparison: PREFIX
+    Value: arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark
+RecordState:
+  - Comparison: NOT_EQUALS
+    Value: ARCHIVED
+WorkflowStatus:
+  - Comparison: NOT_EQUALS
+    Value: SUPPRESSED
+```
+
+By default, the following generators are used to generate the compliance scores:
 
 - `arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark`
 - `aws-foundational-security-best-practices`
@@ -31,6 +48,15 @@ Building and deploying the solution:
 # Builds the solution
 make build
 
-# Deploys the solution 
+# Deploys the solution
 make deploy
+```
+
+## Running golang environment locally
+
+You can run this project in a local container with the following command:
+
+```shell
+docker run --rm -it -v $(pwd):/go/aws-security-posture public.ecr.aws/docker/library/golang:latest
+cd /go/aws-security-posture
 ```
