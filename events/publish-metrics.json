@@ -5,11 +5,19 @@
   "Accounts": [
     {
       "AccountId": "111122223333",
-      "Score": 80
+      "Workload": "my-workload",
+      "Environment": "development",
+      "Score": 80,
+      "ControlCount": 10,
+      "FindingCount": 20000
     },
     {
       "AccountId": "333322221111",
-      "Score": 90
+      "Workload": "my-workload",
+      "Environment": "test",
+      "Score": 90,
+      "ControlCount": 14,
+      "FindingCount": 120000
     }
   ]
 }

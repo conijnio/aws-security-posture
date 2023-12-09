@@ -1,4 +1,4 @@
-module collect-findings
+module aggregate-findings
 
 go 1.20
 

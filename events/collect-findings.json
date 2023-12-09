@@ -1,5 +1,24 @@
 {
     "bucket": "my-sample-bucket",
     "report": "aws-foundational-security-best-practices",
-    "generator-id": "aws-foundational-security-best-practices"
+    "filter": {
+        "GeneratorId": [
+            {
+                "Comparison": "PREFIX",
+                "Value" :"aws-foundational-security-best-practices"
+            }
+        ],
+        "RecordState": [
+            {
+                "Comparison": "NOT_EQUALS",
+                "Value" :"ARCHIVED"
+            }
+        ],
+        "WorkflowStatus": [
+            {
+                "Comparison": "NOT_EQUALS",
+                "Value" :"SUPPRESSED"
+            }
+        ]
+    }
 }

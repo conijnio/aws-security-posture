@@ -357,7 +357,7 @@
       ]
     },
     "FirstObservedAt": "2023-06-13T19:40:40.726Z",
-    "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.3",
+    "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.4",
     "Id": "arn:aws:securityhub:eu-west-1:111122223333:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
     "LastObservedAt": "2023-08-02T21:23:39.225Z",
     "Malware": null,

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/aws-sdk-go-v2/service/securityhub/types"
 	"io"
 	"log"
 	"path/filepath"
@@ -36,13 +35,21 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 		Timestamp: request.Timestamp,
 	}
 
-	findings, err := x.downloadFindings(request.Bucket, request.Key)
+	aggregatedFindings, err := x.downloadFindings(request.Bucket, request.AggregatedFindings)
 
 	if err != nil {
 		return response, err
 	}
 
-	for accountId, accountFindings := range x.splitPerAccountId(findings) {
+	findings, err := x.downloadFindings(request.Bucket, request.Findings)
+
+	if err != nil {
+		return response, err
+	}
+
+	mergedFindings := append(aggregatedFindings, findings...)
+
+	for accountId, accountFindings := range x.splitPerAccountId(mergedFindings) {
 		data, _ := json.Marshal(accountFindings)
 		accountObjectKey, err := x.uploadFile(accountId, data)
 
@@ -60,28 +67,36 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 	return response, err
 }
 
-func (x *Lambda) splitPerAccountId(findings []*types.AwsSecurityFinding) map[string][]*types.AwsSecurityFinding {
-	var findingsPerAccount = make(map[string][]*types.AwsSecurityFinding)
+func (x *Lambda) splitPerAccountId(findings []*Finding) map[string][]*Finding {
+	var findingsPerAccount = make(map[string][]*Finding)
 
 	for _, finding := range findings {
-		findingsPerAccount[*finding.AwsAccountId] = append(findingsPerAccount[*finding.AwsAccountId], finding)
+		AwsAccountId := finding.AwsAccountId
+		findingsPerAccount[AwsAccountId] = append(findingsPerAccount[AwsAccountId], finding)
 	}
 
 	return findingsPerAccount
 }
 
-func (x *Lambda) downloadFindings(bucket string, key string) ([]*types.AwsSecurityFinding, error) {
-	data, err := x.downloadFile(bucket, key)
+func (x *Lambda) downloadFindings(bucket string, keys []string) ([]*Finding, error) {
+	var findings []*Finding
 
-	if err != nil {
-		return []*types.AwsSecurityFinding{}, err
+	for _, key := range keys {
+		data, err := x.downloadFile(bucket, key)
+		if err != nil {
+			return []*Finding{}, err
+		}
+		var records []*Finding
+		err = json.Unmarshal(data, &records)
+		if err != nil {
+			return []*Finding{}, err
+		}
+		findings = append(findings, records...)
+
 	}
 
-	var findings []*types.AwsSecurityFinding
-	err = json.Unmarshal(data, &findings)
 	log.Printf("Downloaded %d findings", len(findings))
-
-	return findings, err
+	return findings, nil
 }
 
 func (x *Lambda) downloadFile(bucket string, key string) ([]byte, error) {
@@ -121,7 +136,7 @@ func (x *Lambda) resolveBucketKey(accountId string) string {
 		accountId,
 		fmt.Sprintf("%d", t.Year()),
 		fmt.Sprintf("%02d", int(t.Month())),
-		fmt.Sprintf("%d", t.Day()),
+		fmt.Sprintf("%02d", t.Day()),
 		fmt.Sprintf("%d.json", t.Unix()),
 	)
 }

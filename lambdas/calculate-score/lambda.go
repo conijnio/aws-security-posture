@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/aws-sdk-go-v2/service/securityhub/types"
 	"io"
 	"log"
 )
@@ -23,8 +22,10 @@ func New(cfg aws.Config) *Lambda {
 
 func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error) {
 	response := Response{
-		AccountId: request.AccountId,
-		Score:     0,
+		AccountId:   request.AccountId,
+		Workload:    request.Workload,
+		Environment: request.Environment,
+		Score:       0,
 	}
 	x.ctx = ctx
 	log.Printf("Calculating the security score for: %s", request.AccountId)
@@ -35,44 +36,29 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 		return response, err
 	}
 
-	failed := 0
-	notAvailable := 0
-	passed := 0
-	warning := 0
+	calc := NewCalculator()
 
 	for _, finding := range findings {
-		if finding.Compliance.Status == types.ComplianceStatusPassed {
-			passed++
-		}
-		if finding.Compliance.Status == types.ComplianceStatusNotAvailable {
-			passed++
-			notAvailable++
-		}
-		if finding.Compliance.Status == types.ComplianceStatusFailed {
-			failed++
-		}
-		if finding.Compliance.Status == types.ComplianceStatusWarning {
-			failed++
-			warning++
-		}
+		calc.ProcessFinding(finding)
 	}
 
-	response.Score = (float64(passed) / float64(len(findings))) * 100
-	log.Printf("%d Passed findings (%d in NotAvailable)", passed, notAvailable)
-	log.Printf("%d Failed findings (%d in Warning)", failed, warning)
+	response.Score = calc.Score()
+	response.ControlCount = calc.ControlCount()
+	response.FindingCount = calc.FindingCount()
+	log.Printf("%d controls (%d Passed and %d Failed)", calc.total, calc.passed, calc.failed)
 	log.Printf("Compliance score is: %.2f%%", response.Score)
 
 	return response, err
 }
 
-func (x *Lambda) downloadFindings(bucket string, key string) ([]*types.AwsSecurityFinding, error) {
+func (x *Lambda) downloadFindings(bucket string, key string) ([]*Finding, error) {
 	data, err := x.downloadFile(bucket, key)
 
 	if err != nil {
-		return []*types.AwsSecurityFinding{}, err
+		return []*Finding{}, err
 	}
 
-	var findings []*types.AwsSecurityFinding
+	var findings []*Finding
 	err = json.Unmarshal(data, &findings)
 	log.Printf("Downloaded %d findings", len(findings))
 

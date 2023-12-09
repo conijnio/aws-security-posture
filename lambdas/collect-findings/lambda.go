@@ -9,8 +9,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/securityhub"
 	"github.com/aws/aws-sdk-go-v2/service/securityhub/types"
+	"github.com/gofrs/uuid"
 	"log"
+	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 )
 
@@ -27,72 +30,91 @@ func New(cfg aws.Config) *Lambda {
 	return m
 }
 
+func resolveMaxResults() int {
+	num, err := strconv.Atoi(os.Getenv("MAX_RESULTS"))
+
+	if err != nil {
+		return 100
+	}
+
+	return num
+}
+
 func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error) {
 	x.ctx = ctx
 	log.Printf("Running a report for: %s", request.Report)
-	log.Printf("Use the %s generator", request.GeneratorId)
-	log.Printf("Use the %s bucket", request.Bucket)
+	log.Printf("Use the '%s' bucket", request.Bucket)
 
-	allFindings, err := x.downloadFindings(request.GeneratorId)
+	var err error
+	var downloadedFindings *DownloadedFinding
+
+	downloadedFindings, err = x.downloadFindings(&request.Filter, request.NextToken)
+
 	if err != nil {
 		return Response{}, err
 	}
 
+	findings, err := json.Marshal(downloadedFindings.Findings)
+
 	objectKey := x.resolveBucketKey("raw", request.Report)
-	err = x.uploadFile(request.Bucket, objectKey, allFindings)
+	err = x.uploadFile(request.Bucket, objectKey, findings)
+	findingsReferenceList := append(request.Findings, objectKey)
 
 	return Response{
-		Report:    request.Report,
-		Bucket:    request.Bucket,
-		Key:       objectKey,
-		Timestamp: time.Now().Unix(),
+		Report: request.Report,
+		Bucket: request.Bucket,
+		Filter: request.Filter,
+		// Add optional fields for the next iterations
+		Findings:           findingsReferenceList,
+		FindingCount:       len(findingsReferenceList),
+		AggregatedFindings: request.AggregatedFindings,
+		Timestamp:          time.Now().Unix(),
+		NextToken:          downloadedFindings.NextToken,
 	}, err
 }
 
-func (x *Lambda) getFindingsForStandard(standard string) *securityhub.GetFindingsInput {
-	log.Printf("Fetching all findings that have a GeneratorId that starts with: %s", standard)
-	return &securityhub.GetFindingsInput{
-		Filters: &types.AwsSecurityFindingFilters{
-			GeneratorId: []types.StringFilter{
-				{
-					Comparison: "PREFIX",
-					Value:      aws.String(standard),
-				},
-			},
-			RecordState: []types.StringFilter{
-				{
-					Comparison: "NOT_EQUALS",
-					Value:      aws.String("ARCHIVED"),
-				},
-			},
-			WorkflowStatus: []types.StringFilter{
-				{
-					Comparison: "NOT_EQUALS",
-					Value:      aws.String("SUPPRESSED"),
-				},
-			},
-		},
-		MaxResults: int32(100),
+func (x *Lambda) downloadFindings(filter *types.AwsSecurityFindingFilters, token string) (*DownloadedFinding, error) {
+	var awsToken *string
+
+	if token != "" {
+		awsToken = aws.String(token)
 	}
+
+	results, err := x.securityHubClient.GetFindings(x.ctx, &securityhub.GetFindingsInput{
+		Filters:    filter,
+		NextToken:  awsToken,
+		MaxResults: aws.Int32(int32(resolveMaxResults())),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return x.resolveFindings(results)
 }
 
-func (x *Lambda) downloadFindings(standard string) ([]byte, error) {
-	var allFindings []types.AwsSecurityFinding
+func (x *Lambda) resolveFindings(results *securityhub.GetFindingsOutput) (*DownloadedFinding, error) {
+	var nextToken string
+	var allFindings []*Finding
 
-	paginator := securityhub.NewGetFindingsPaginator(x.securityHubClient, x.getFindingsForStandard(standard))
-	pageNum := 0
-	for paginator.HasMorePages() {
-		page, err := paginator.NextPage(x.ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		allFindings = append(allFindings, page.Findings...)
-		pageNum++
+	for _, finding := range results.Findings {
+		allFindings = append(allFindings, &Finding{
+			Id:           *finding.Id,
+			Status:       string(finding.Compliance.Status),
+			ProductArn:   *finding.ProductArn,
+			GeneratorId:  *finding.GeneratorId,
+			AwsAccountId: *finding.AwsAccountId,
+		})
 	}
 
-	log.Printf("Found %d findings", len(allFindings))
-	return json.Marshal(allFindings)
+	if results.NextToken != nil {
+		nextToken = *results.NextToken
+	}
+
+	return &DownloadedFinding{
+		Findings:  allFindings,
+		NextToken: nextToken,
+	}, nil
 }
 
 func (x *Lambda) uploadFile(bucket string, key string, data []byte) error {
@@ -104,17 +126,22 @@ func (x *Lambda) uploadFile(bucket string, key string, data []byte) error {
 		Body:   bytes.NewReader(data),
 	})
 
+	viewData := string(data)
+	log.Printf(viewData)
+
 	return err
 }
 
 func (x *Lambda) resolveBucketKey(prefix string, report string) string {
 	t := time.Now()
+	id, _ := uuid.NewV6()
+
 	return filepath.Join(
 		report,
 		prefix,
 		fmt.Sprintf("%d", t.Year()),
 		fmt.Sprintf("%02d", int(t.Month())),
 		fmt.Sprintf("%02d", t.Day()),
-		fmt.Sprintf("%d.json", t.Unix()),
+		fmt.Sprintf("%s.json", id.String()),
 	)
 }
