@@ -2,16 +2,24 @@
 
 [AWS Security Posture](http://github.com/conijnio/aws-security-posture) collects security hub findings on a configurable interval, and extracts meaningful metrics. These metrics are stored in CloudWatch Metrics and can be visualized using CloudWatch DashBoards.
 
+![AWS StepFunctions Example](./assets/images/dashboard_example.png)
+
+When you deployed this solution in the `audit` account of your landing zone. You will be able to create dashboards like you see here. 
+The sample above has been created using [`compliance-dashboard.yaml`](./compliance-dashboard.yaml). It assumes that you will have 5 AWS accounts per workload: `build`, `development`, `test`, `acceptance` and `production`.
+You can easily change this to your own setup. 
+
+## Implementation
+
 ![AWS StepFunctions Example](./assets/images/state_machine.png)
 
-## Flow
-
-- Collect all the findings for the given generator.
-- Collect all accounts based on the findings.
-- For each account based on the account findings:
-  - Fetch the account name and determine the workload name and environment.
-  - Calculate the compliance score.
-- Publish the score as CloudWatch Metrics.
+1. Use the given filter to retrieve all findings, we are fetching 100 findings per invocation.
+2. When there is a `NextToken` we need to collect the rest of the findings. 
+3. Check if the fetched findings need to be aggregated. (repeat this until we have all findings)
+4. Split the findings per AWS Account ID.
+5. In parallel we will now:
+   1. Fetch the account name and extract the workload name and environment.
+   2. Calculate the score based on the findings.
+6. Publish the results to CloudWatch metrics.
 
 ## Filters
 

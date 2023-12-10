@@ -1,0 +1,146 @@
+AWSTemplateFormatVersion : 2010-09-09
+Transform: AWS::LanguageExtensions
+Parameters:
+
+  WorkloadMetricName:
+    Description: The metric name used to identify the workload.
+    Type: String
+
+  WorkloadName:
+    Description: The name used to display the dashboard.
+    Type: String
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Workload information
+        Parameters:
+          - WorkloadName
+          - WorkloadMetricName
+
+Resources:
+
+  Dashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Ref WorkloadName
+      DashboardBody:
+        Fn::ToJsonString:
+          widgets:
+            - height: 5
+              width: 24
+              y: 0
+              x: 0
+              type: metric
+              properties:
+                metrics:
+                  - [SecurityPosture, Score, Report, cis-aws-foundations-benchmark, Environment, build, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region]
+                  - [SecurityPosture, Score, Report, cis-aws-foundations-benchmark, Environment, development, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region]
+                  - [SecurityPosture, Score, Report, cis-aws-foundations-benchmark, Environment, test, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region]
+                  - [SecurityPosture, Score, Report, cis-aws-foundations-benchmark, Environment, acceptance, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region]
+                  - [SecurityPosture, Score, Report, cis-aws-foundations-benchmark, Environment, production, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region]
+                view: gauge
+                stacked: false
+                region: !Ref AWS::Region
+                period: 21600
+                stat: Maximum
+                yAxis:
+                  left:
+                    min: 0
+                    max: 100
+                annotations:
+                  horizontal:
+                    - color: "#d62728"
+                      label: Untitled annotation
+                      value: 0
+                      fill: above
+                    - color: "#f89256"
+                      label: Untitled annotation
+                      value: 90
+                      fill: above
+                    - color: "#2ca02c"
+                      label: Untitled annotation
+                      value: 95
+                      fill: above
+                legend:
+                  position: bottom
+                title: CIS Foundations Benchmark
+            - height: 5
+              width: 24
+              y: 5
+              x: 0
+              type: metric
+              properties:
+                title: AWS Foundational Security Best Practices
+                legend:
+                  position: bottom
+                metrics:
+                  - [ SecurityPosture, Score, Report, aws-foundational-security-best-practices, Environment, build, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Score, Report, aws-foundational-security-best-practices, Environment, development, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Score, Report, aws-foundational-security-best-practices, Environment, test, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Score, Report, aws-foundational-security-best-practices, Environment, acceptance, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Score, Report, aws-foundational-security-best-practices, Environment, production, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                view: gauge
+                stacked: false
+                region: !Ref AWS::Region
+                period: 21600
+                stat: Maximum
+                yAxis:
+                  left:
+                    min: 0
+                    max: 100
+                annotations:
+                  horizontal:
+                    - color: "#d62728"
+                      label: Untitled annotation
+                      value: 0
+                      fill: above
+                    - color: "#f89256"
+                      label: Untitled annotation
+                      value: 90
+                      fill: above
+                    - color: "#2ca02c"
+                      label: Untitled annotation
+                      value: 95
+                      fill: above
+            - type: metric
+              x: 0
+              y: 10
+              width: 12
+              height: 5
+              properties:
+                title: CIS Foundations Benchmark - Findings
+                legend:
+                  position: right
+                metrics:
+                  - [ SecurityPosture, Findings, Report, cis-aws-foundations-benchmark, Environment, build, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Findings, Report, cis-aws-foundations-benchmark, Environment, development, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Findings, Report, cis-aws-foundations-benchmark, Environment, test, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Findings, Report, cis-aws-foundations-benchmark, Environment, acceptance, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Findings, Report, cis-aws-foundations-benchmark, Environment, production, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                view: timeSeries
+                stacked: false
+                region: !Ref AWS::Region
+                period: 21600
+                stat: Maximum
+            - type: metric
+              x: 12
+              y: 10
+              width: 12
+              height: 5
+              properties:
+                title: AWS Foundational Security Best Practices - Findings
+                legend:
+                  position: right
+                metrics:
+                  - [ SecurityPosture, Findings, Report, aws-foundational-security-best-practices, Environment, build, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Findings, Report, aws-foundational-security-best-practices, Environment, development, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Findings, Report, aws-foundational-security-best-practices, Environment, test, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Findings, Report, aws-foundational-security-best-practices, Environment, acceptance, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Findings, Report, aws-foundational-security-best-practices, Environment, production, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                view: timeSeries
+                stacked: false
+                region: !Ref AWS::Region
+                period: 21600
+                stat: Maximum
