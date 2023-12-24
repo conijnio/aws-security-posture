@@ -1,0 +1,9 @@
+{
+    "Parameters": {
+        "CollectInterval" : "12 hours"
+    },
+    "Tags": {},
+    "StackPolicy": {
+        "Statement": []
+    }
+}

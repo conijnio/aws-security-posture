@@ -15,7 +15,7 @@ phases:
 artifacts:
   files:
     - packaged-template.yaml
-    - configuration.json
+    - parameters-production.json
 cache:
   paths:
     - '*/**/.aws-sam/**/*'

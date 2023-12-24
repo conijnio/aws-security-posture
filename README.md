@@ -4,9 +4,13 @@
 
 ![AWS StepFunctions Example](./assets/images/dashboard_example.png)
 
-When you deployed this solution in the `audit` account of your landing zone. You will be able to create dashboards like you see here. 
-The sample above has been created using [`compliance-dashboard.yaml`](./compliance-dashboard.yaml). It assumes that you will have 5 AWS accounts per workload: `build`, `development`, `test`, `acceptance` and `production`.
-You can easily change this to your own setup. 
+This solution was designed to be hosted in the account where you have your Security Hub aggregation configured. This way
+you do not need to deploy it in every account individually. It also ensures that all accounts do get a security score.
+When there are findings a score is being calculated.
+
+You will be able to create dashboards like you see here.  The sample above has been created using [`compliance-dashboard.yaml`](./compliance-dashboard.yaml).
+It assumes that you will have 5 AWS accounts per workload: `build`, `development`, `test`, `acceptance` and `production`.
+You can easily change this to your own setup.
 
 ## Implementation
 
@@ -16,7 +20,7 @@ You can easily change this to your own setup.
 2. When there is a `NextToken` we need to collect the rest of the findings. 
 3. Check if the fetched findings need to be aggregated. (repeat this until we have all findings)
 4. Split the findings per AWS Account ID.
-5. In parallel we will now:
+5. In parallel, we will now:
    1. Fetch the account name and extract the workload name and environment.
    2. Calculate the score based on the findings.
 6. Publish the results to CloudWatch metrics.

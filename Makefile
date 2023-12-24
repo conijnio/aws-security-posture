@@ -95,8 +95,8 @@ delete: check-region ## Delete the solution
 		--region=$(AWS_REGION) \
 
 .PHONY: tidy
-tidy: ## Run `go mod tidy` for all modules
-	$(info [+] Running go mod tidy)
+tidy: ## Run `go get -u` and `go mod tidy` for all modules
+	$(info [+] Running `go get -u` and `go mod tidy`)
 	find . -name go.mod -execdir go get -u \;
 	find . -name go.mod -execdir go mod tidy \;
 
