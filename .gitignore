@@ -5,3 +5,4 @@ data
 reports
 events/*-payload.json
 coverage.out
+report.xml
