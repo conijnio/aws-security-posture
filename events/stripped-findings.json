@@ -4,48 +4,55 @@
     "Status": "FAILED",
     "ProductArn": "arn:aws:securityhub:eu-west-1::product/aws/securityhub",
     "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.3",
-    "AwsAccountId": "111122223333"
+    "AwsAccountId": "111122223333",
+    "Title": "4.3 Ensure the default security group of every VPC restricts all traffic"
   },
   {
     "Id": "arn:aws:securityhub:eu-west-1:111122223333:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
     "Status": "WARNING",
     "ProductArn": "arn:aws:securityhub:eu-west-1::product/aws/securityhub",
     "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.3",
-    "AwsAccountId": "111122223333"
+    "AwsAccountId": "111122223333",
+    "Title": "4.3 Ensure the default security group of every VPC restricts all traffic"
   },
   {
     "Id": "arn:aws:securityhub:eu-west-1:111122223333:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
     "Status": "NOT_AVAILABLE",
     "ProductArn": "arn:aws:securityhub:eu-west-1::product/aws/securityhub",
     "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.3",
-    "AwsAccountId": "111122223333"
+    "AwsAccountId": "111122223333",
+    "Title": "4.3 Ensure the default security group of every VPC restricts all traffic"
   },
   {
     "Id": "arn:aws:securityhub:eu-west-1:111122223333:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
     "Status": "PASSED",
     "ProductArn": "arn:aws:securityhub:eu-west-1::product/aws/securityhub",
     "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.4",
-    "AwsAccountId": "111122223333"
+    "AwsAccountId": "111122223333",
+    "Title": "4.3 Ensure the default security group of every VPC restricts all traffic"
   },
   {
     "Id": "arn:aws:securityhub:eu-west-1:333322221111:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
     "Status": "PASSED",
     "ProductArn": "arn:aws:securityhub:eu-west-1::product/aws/securityhub",
     "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.3",
-    "AwsAccountId": "333322221111"
+    "AwsAccountId": "333322221111",
+    "Title": "4.3 Ensure the default security group of every VPC restricts all traffic"
   },
   {
     "Id": "arn:aws:securityhub:eu-west-1:333322221111:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
     "Status": "PASSED",
     "ProductArn": "arn:aws:securityhub:eu-west-1::product/aws/securityhub",
     "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.3",
-    "AwsAccountId": "333322221111"
+    "AwsAccountId": "333322221111",
+    "Title": "4.3 Ensure the default security group of every VPC restricts all traffic"
   },
   {
     "Id": "arn:aws:securityhub:eu-west-1:333322221111:subscription/cis-aws-foundations-benchmark/v/1.2.0/4.3/finding/05aabd65-dba0-4714-91cb-2ccba75c0bd8",
     "Status": "PASSED",
     "ProductArn": "arn:aws:securityhub:eu-west-1::product/aws/securityhub",
     "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.3",
-    "AwsAccountId": "333322221111"
+    "AwsAccountId": "333322221111",
+    "Title": "4.3 Ensure the default security group of every VPC restricts all traffic"
   }
 ]

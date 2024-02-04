@@ -4,6 +4,7 @@ type Request struct {
 	Report             string   `json:"Report"`
 	Timestamp          int64    `json:"Timestamp"`
 	Bucket             string   `json:"Bucket"`
+	GroupBy            string   `json:"GroupBy"`
 	NextToken          string   `json:"NextToken"`
 	FindingCount       int      `json:"FindingCount"`
 	Findings           []string `json:"Findings"`
@@ -14,6 +15,7 @@ type Account struct {
 	AccountId string `json:"AccountId"`
 	Bucket    string `json:"Bucket"`
 	Key       string `json:"Key"`
+	GroupBy   string `json:"GroupBy"`
 }
 
 type Finding struct {
@@ -22,6 +24,7 @@ type Finding struct {
 	ProductArn   string `json:"ProductArn"`
 	GeneratorId  string `json:"GeneratorId"`
 	AwsAccountId string `json:"AwsAccountId"`
+	Title        string `json:"Title"`
 }
 
 type Response struct {

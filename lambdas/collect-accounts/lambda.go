@@ -61,6 +61,7 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 			AccountId: accountId,
 			Bucket:    request.Bucket,
 			Key:       accountObjectKey,
+			GroupBy:   request.GroupBy,
 		})
 	}
 

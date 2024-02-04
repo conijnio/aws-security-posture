@@ -259,20 +259,6 @@ func TestLambdaFunctionLoop(t *testing.T) {
 	_ = os.Setenv("MAX_PAGES", "")
 }
 
-func generateFinding(prefix string, index int) Finding {
-	return Finding{
-		Id: fmt.Sprintf("%s-%d", prefix, index),
-	}
-}
-
-func generateFindings(prefix string, count int) []Finding {
-	var findings []Finding
-	for i := 0; i < count; i++ {
-		findings = append(findings, generateFinding(prefix, i))
-	}
-	return findings
-}
-
 func TestAggregationPassing(t *testing.T) {
 	rawFindings := readRawFindings("../../events/raw-findings.json")
 

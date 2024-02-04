@@ -235,6 +235,33 @@ Resources:
                   ComplianceStatus:
                     - Comparison: NOT_EQUALS
                       Value: NOT_AVAILABLE
+        LandingZoneStandard:
+          Type: ScheduleV2
+          Properties:
+            Name: LandingZoneStandard
+            Description: Collect findings using the specified rate.
+            PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
+            State: ENABLED
+            ScheduleExpression: !Sub rate(${CollectInterval})
+            ScheduleExpressionTimezone: Europe/Amsterdam
+            Input:
+              Fn::ToJsonString:
+                Bucket: !Ref FindingsBucket
+                Report: lz-standard
+                GroupBy: Title
+                Filter:
+                  Title:
+                    - Comparison: PREFIX
+                      Value: lz-
+                  RecordState:
+                    - Comparison: NOT_EQUALS
+                      Value: ARCHIVED
+                  WorkflowStatus:
+                    - Comparison: NOT_EQUALS
+                      Value: SUPPRESSED
+                  ComplianceStatus:
+                    - Comparison: NOT_EQUALS
+                      Value: NOT_AVAILABLE
       DefinitionSubstitutions:
         CollectFindingsFunction: !GetAtt CollectFindingsFunction.Arn
         AggregateFindingsFunction: !GetAtt AggregateFindingsFunction.Arn

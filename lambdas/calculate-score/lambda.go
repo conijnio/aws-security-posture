@@ -39,7 +39,7 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 	calc := NewCalculator()
 
 	for _, finding := range findings {
-		calc.ProcessFinding(finding)
+		calc.ProcessFinding(finding, request.GroupBy)
 	}
 
 	response.Score = calc.Score()

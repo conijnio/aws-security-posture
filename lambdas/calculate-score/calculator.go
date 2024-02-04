@@ -27,11 +27,21 @@ const (
 	StatusNotProcessed Status = "NOT YET"
 )
 
-func (x *Calculator) ProcessFinding(finding *Finding) {
+func (x *Calculator) resolveIdentifier(finding *Finding, groupBy string) string {
+	switch groupBy {
+	case "Title":
+		return finding.Title
+	}
+
+	return finding.GeneratorId
+}
+
+func (x *Calculator) ProcessFinding(finding *Finding, groupBy string) {
 	x.findings++
 	status := x.resolveStatus(finding)
+	identifier := x.resolveIdentifier(finding, groupBy)
 
-	switch x.hasBeenProcessed(finding.GeneratorId) {
+	switch x.hasBeenProcessed(identifier) {
 	// The control has not been processed yet, so we will increment the current status.
 	case StatusNotProcessed:
 		if status == StatusPassed {
@@ -39,7 +49,7 @@ func (x *Calculator) ProcessFinding(finding *Finding) {
 		} else {
 			x.failed++
 		}
-		x.processHistory[status] = append(x.processHistory[status], finding.GeneratorId)
+		x.processHistory[status] = append(x.processHistory[status], identifier)
 		x.total++
 	// The control was already been processed as passed.
 	case StatusPassed:
@@ -47,7 +57,7 @@ func (x *Calculator) ProcessFinding(finding *Finding) {
 		if status == StatusFailed {
 			x.passed--
 			x.failed++
-			x.processHistory[status] = append(x.processHistory[status], finding.GeneratorId)
+			x.processHistory[status] = append(x.processHistory[status], identifier)
 		}
 	}
 }

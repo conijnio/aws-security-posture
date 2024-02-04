@@ -3,9 +3,10 @@ package main
 import "github.com/aws/aws-sdk-go-v2/service/securityhub/types"
 
 type Request struct {
-	Report string                          `json:"Report"`
-	Bucket string                          `json:"Bucket"`
-	Filter types.AwsSecurityFindingFilters `json:"Filter"`
+	Report  string                          `json:"Report"`
+	Bucket  string                          `json:"Bucket"`
+	GroupBy string                          `json:"GroupBy"`
+	Filter  types.AwsSecurityFindingFilters `json:"Filter"`
 	// Optional: the following 3 fields need to be here when
 	Findings           []string `json:"Findings"`
 	FindingCount       int      `json:"FindingCount"`
@@ -17,6 +18,7 @@ type Request struct {
 type Response struct {
 	Report             string                          `json:"Report"`
 	Bucket             string                          `json:"Bucket"`
+	GroupBy            string                          `json:"GroupBy"`
 	Filter             types.AwsSecurityFindingFilters `json:"Filter"`
 	FindingCount       int                             `json:"FindingCount"`
 	Findings           []string                        `json:"Findings"`
@@ -36,4 +38,5 @@ type Finding struct {
 	ProductArn   string `json:"ProductArn"`
 	GeneratorId  string `json:"GeneratorId"`
 	AwsAccountId string `json:"AwsAccountId"`
+	Title        string `json:"Title"`
 }
