@@ -206,6 +206,8 @@ Resources:
                   WorkflowStatus:
                     - Comparison: NOT_EQUALS
                       Value: SUPPRESSED
+                    - Comparison: NOT_EQUALS
+                      Value: RESOLVED
                   ComplianceStatus:
                     - Comparison: NOT_EQUALS
                       Value: NOT_AVAILABLE
@@ -232,6 +234,8 @@ Resources:
                   WorkflowStatus:
                     - Comparison: NOT_EQUALS
                       Value: SUPPRESSED
+                    - Comparison: NOT_EQUALS
+                      Value: RESOLVED
                   ComplianceStatus:
                     - Comparison: NOT_EQUALS
                       Value: NOT_AVAILABLE
@@ -259,6 +263,8 @@ Resources:
                   WorkflowStatus:
                     - Comparison: NOT_EQUALS
                       Value: SUPPRESSED
+                    - Comparison: NOT_EQUALS
+                      Value: RESOLVED
                   ComplianceStatus:
                     - Comparison: NOT_EQUALS
                       Value: NOT_AVAILABLE
