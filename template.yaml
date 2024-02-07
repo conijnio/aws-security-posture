@@ -427,11 +427,8 @@ Resources:
         Version: 2012-10-17
         Statement:
           - Effect: Allow
-            Action: s3:PutObject
-            Resource: !Sub ${FindingsBucket.Arn}/*
-          - Effect: Allow
-            Action: securityhub:GetFindings
-            Resource: !Sub arn:aws:securityhub:*:${AWS::AccountId}:hub/default
+            Action: config:GetConformancePackComplianceDetails
+            Resource: "*" #!Sub arn:aws:config:${AWS::Region}:${AWS::AccountId}:conformance-pack/${ConformancePack}/*
 
   ConformancePackLogGroup:
     Type: AWS::Logs::LogGroup
