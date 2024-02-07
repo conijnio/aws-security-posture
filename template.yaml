@@ -167,7 +167,7 @@ Resources:
                   - !GetAtt ConformancePackFunction.Arn
                   - !GetAtt CollectFindingsFunction.Arn
                   - !GetAtt AggregateFindingsFunction.Arn
-                  - !GetAtt CollectAccountsFunction.Arn
+                  - !GetAtt SplitPerAccountFunction.Arn
                   - !GetAtt WorkloadContextFunction.Arn
                   - !GetAtt CalculateScoreFunction.Arn
                   - !GetAtt PublishMetricsFunction.Arn
@@ -254,7 +254,7 @@ Resources:
         ConformancePackFunction: !GetAtt ConformancePackFunction.Arn
         CollectFindingsFunction: !GetAtt CollectFindingsFunction.Arn
         AggregateFindingsFunction: !GetAtt AggregateFindingsFunction.Arn
-        CollectAccountsFunction: !GetAtt CollectAccountsFunction.Arn
+        SplitPerAccountFunction: !GetAtt SplitPerAccountFunction.Arn
         WorkloadContextFunction: !GetAtt WorkloadContextFunction.Arn
         CalculateScoreFunction: !GetAtt CalculateScoreFunction.Arn
         PublishMetricsFunction: !GetAtt PublishMetricsFunction.Arn
@@ -524,30 +524,30 @@ Resources:
       KmsKeyId: !GetAtt KmsKey.Arn
       RetentionInDays: !Ref RetentionInDays
 
-  ##################
-  # Collect Accounts
-  ##################
+  ###################
+  # Split Per Account
+  ###################
 
-  CollectAccountsFunction:
+  SplitPerAccountFunction:
     Type: AWS::Serverless::Function
     Metadata:
       BuildMethod: makefile
     Properties:
       PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
-      FunctionName: !Sub ${Prefix}-collect-accounts
+      FunctionName: !Sub ${Prefix}-split-per-account
       Architectures: [arm64]
       Runtime: provided.al2
-      CodeUri: ./lambdas/collect-accounts
+      CodeUri: ./lambdas/split-per-account
       Handler: bootstrap
       Timeout: 900  # 15 Minutes, this will process all files stored on S3 by the CollectFindings action.
       MemorySize: 8192
 
-  CollectAccountsPolicy:
+  SplitPerAccountPolicy:
     Type: AWS::IAM::Policy
     Properties:
       Roles:
-        - !Ref CollectAccountsFunctionRole
-      PolicyName: !Sub ${Prefix}-collect-accounts
+        - !Ref SplitPerAccountFunctionRole
+      PolicyName: !Sub ${Prefix}-split-per-account
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -557,10 +557,10 @@ Resources:
               - s3:PutObject
             Resource: !Sub ${FindingsBucket.Arn}/*
 
-  CollectAccountsLogGroup:
+  SplitPerAccountLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/lambda/${CollectAccountsFunction}
+      LogGroupName: !Sub /aws/lambda/${SplitPerAccountFunction}
       KmsKeyId: !GetAtt KmsKey.Arn
       RetentionInDays: !Ref RetentionInDays
 

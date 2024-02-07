@@ -1,4 +1,4 @@
-module collect-accounts
+module split-per-account
 
 go 1.20
 

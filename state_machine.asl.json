@@ -92,14 +92,14 @@
         {
           "Variable": "$.NextToken",
           "StringEquals": "",
-          "Next": "CollectAccounts"
+          "Next": "SplitPerAccount"
         }
       ],
       "Default": "CollectFindings"
     },
-    "CollectAccounts": {
+    "SplitPerAccount": {
       "Type": "Task",
-      "Resource": "${CollectAccountsFunction}",
+      "Resource": "${SplitPerAccountFunction}",
       "Catch": [
         {
           "ErrorEquals": [
