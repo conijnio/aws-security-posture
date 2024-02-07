@@ -19,19 +19,30 @@ func New(cfg aws.Config) *Lambda {
 }
 
 func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error) {
-	response := Response{
-		Report:  request.Report,
-		Bucket:  request.Bucket,
-		GroupBy: "Title",
-		Filter:  request.Filter,
-		Controls: []string{
-			// TODO: Let's query this from the API
-			"lz-s3-access-logging-conformance-pack",
-		},
-	}
 	x.ctx = ctx
+	response := Response{
+		Report:    request.Report,
+		Bucket:    request.Bucket,
+		Timestamp: request.Timestamp,
+		Accounts:  []Account{},
+	}
 
 	log.Printf("Loading Conformance Pack Context: %s", request.ConformancePack)
+	groupBy := "Title"
+	controls := []string{
+		// TODO: Let's query this from the API
+		"lz-s3-access-logging-conformance-pack",
+	}
+
+	for _, account := range request.Accounts {
+		response.Accounts = append(response.Accounts, Account{
+			AccountId: account.AccountId,
+			Bucket:    account.Bucket,
+			Key:       account.Key,
+			GroupBy:   groupBy,
+			Controls:  controls,
+		})
+	}
 
 	return response, nil
 }

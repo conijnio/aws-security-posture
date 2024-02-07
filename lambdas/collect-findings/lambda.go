@@ -40,25 +40,6 @@ func resolveMaxResults() int {
 	return num
 }
 
-func (x *Lambda) resolveGroupBy(groupBy string) string {
-	supportedGrouping := map[string]bool{
-		"GeneratorId": true,
-		"Title":       true,
-	}
-
-	if groupBy == "" {
-		log.Println("No GroupBy value supplied, we will fallback on the 'GeneratorId'!")
-		return "GeneratorId"
-	}
-
-	if !supportedGrouping[groupBy] {
-		log.Printf("The GroupBy value '%s' is not supported, we will fallback on the 'GeneratorId'!", groupBy)
-		return "GeneratorId"
-	}
-
-	return groupBy
-}
-
 func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error) {
 	x.ctx = ctx
 	log.Printf("Running a report for: %s", request.Report)
@@ -80,11 +61,10 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 	findingsReferenceList := append(request.Findings, objectKey)
 
 	return Response{
-		Report:   request.Report,
-		Bucket:   request.Bucket,
-		Filter:   request.Filter,
-		GroupBy:  x.resolveGroupBy(request.GroupBy),
-		Controls: request.Controls,
+		Report:          request.Report,
+		Bucket:          request.Bucket,
+		Filter:          request.Filter,
+		ConformancePack: request.ConformancePack,
 		// Add optional fields for the next iterations
 		Findings:           findingsReferenceList,
 		FindingCount:       len(findingsReferenceList),

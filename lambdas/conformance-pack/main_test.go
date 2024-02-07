@@ -28,7 +28,7 @@ func TestHandler(t *testing.T) {
 		testtools.ExitTest(stubber, t)
 		assert.NoError(t, err)
 
-		assert.Equal(t, "Title", response.GroupBy)
-		assert.Equal(t, 1, len(response.Controls))
+		assert.Equal(t, "Title", response.Accounts[0].GroupBy)
+		assert.Equal(t, 1, len(response.Accounts[0].Controls))
 	})
 }

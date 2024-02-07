@@ -1,7 +1,7 @@
 {
-    "bucket": "my-sample-bucket",
-    "report": "aws-foundational-security-best-practices",
-    "filter": {
+    "Bucket": "my-sample-bucket",
+    "Report": "aws-foundational-security-best-practices",
+    "Filter": {
         "GeneratorId": [
             {
                 "Comparison": "PREFIX",
