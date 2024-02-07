@@ -5,6 +5,7 @@ use (
 	./lambdas/calculate-score
 	./lambdas/collect-accounts
 	./lambdas/collect-findings
+	./lambdas/conformance-pack
 	./lambdas/publish-metrics
 	./lambdas/workload-context
 	.

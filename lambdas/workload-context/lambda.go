@@ -28,6 +28,7 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 		Bucket:    request.Bucket,
 		Key:       request.Key,
 		GroupBy:   request.GroupBy,
+		Controls:  request.Controls,
 	}
 	x.ctx = ctx
 	log.Printf("Fetching workload context for: %s", request.AccountId)

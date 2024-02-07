@@ -52,6 +52,7 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 		Report:             request.Report,
 		Bucket:             request.Bucket,
 		GroupBy:            request.GroupBy,
+		Controls:           request.Controls,
 		Filter:             request.Filter,
 		FindingCount:       0,
 		Findings:           []string{},

@@ -1,12 +1,13 @@
 package main
 
 type Request struct {
-	AccountId   string `json:"AccountId"`
-	Bucket      string `json:"Bucket"`
-	Key         string `json:"Key"`
-	GroupBy     string `json:"GroupBy"`
-	Workload    string `json:"Workload"`
-	Environment string `json:"Environment"`
+	AccountId   string   `json:"AccountId"`
+	Bucket      string   `json:"Bucket"`
+	Key         string   `json:"Key"`
+	GroupBy     string   `json:"GroupBy"`
+	Controls    []string `json:"Controls"`
+	Workload    string   `json:"Workload"`
+	Environment string   `json:"Environment"`
 }
 
 type Finding struct {
@@ -19,10 +20,12 @@ type Finding struct {
 }
 
 type Response struct {
-	AccountId    string  `json:"AccountId"`
-	Workload     string  `json:"Workload"`
-	Environment  string  `json:"Environment"`
-	Score        float64 `json:"Score"`
-	ControlCount int     `json:"ControlCount"`
-	FindingCount int     `json:"FindingCount"`
+	AccountId          string  `json:"AccountId"`
+	Workload           string  `json:"Workload"`
+	Environment        string  `json:"Environment"`
+	Score              float64 `json:"Score"`
+	ControlCount       int     `json:"ControlCount"`
+	FindingCount       int     `json:"FindingCount"`
+	ControlFailedCount int     `json:"ControlFailedCount"`
+	ControlPassedCount int     `json:"ControlPassedCount"`
 }

@@ -7,6 +7,7 @@ type Request struct {
 	Bucket             string                          `json:"Bucket"`
 	GroupBy            string                          `json:"GroupBy"`
 	Filter             types.AwsSecurityFindingFilters `json:"Filter"`
+	Controls           []string                        `json:"Controls"`
 	Findings           []string                        `json:"Findings"`
 	FindingCount       int                             `json:"FindingCount"`
 	AggregatedFindings []string                        `json:"AggregatedFindings"`
@@ -19,6 +20,7 @@ type Response struct {
 	Bucket             string                          `json:"Bucket"`
 	GroupBy            string                          `json:"GroupBy"`
 	Filter             types.AwsSecurityFindingFilters `json:"Filter"`
+	Controls           []string                        `json:"Controls"`
 	FindingCount       int                             `json:"FindingCount"`
 	Findings           []string                        `json:"Findings"`
 	AggregatedFindings []string                        `json:"AggregatedFindings"`

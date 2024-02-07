@@ -85,7 +85,8 @@ deploy: check-profile check-region ## Deploy the solution
 		--s3-bucket cf-templates-1tw6xuuyelyb4-$(AWS_REGION) \
 		--no-fail-on-empty-changeset \
 		--parameter-overrides \
-			CollectInterval="'6 hours'"
+			CollectInterval="'6 hours'" \
+			ConformancePack="OrgConformsPack-lz-framework-6cogv2l0"
 
 .PHONY: delete
 delete: check-region ## Delete the solution

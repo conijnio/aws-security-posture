@@ -1,22 +1,29 @@
 package main
 
-func NewCalculator() *Calculator {
+import (
+	"log"
+	"strings"
+)
+
+func NewCalculator(expectedControls []string) *Calculator {
 	history := make(map[Status][]string)
 	return &Calculator{
-		total:          0,
-		failed:         0,
-		passed:         0,
-		processHistory: history,
+		expectedControls: expectedControls,
+		total:            0,
+		failed:           0,
+		passed:           0,
+		processHistory:   history,
 	}
 }
 
 type Calculator struct {
-	total          int
-	failed         int
-	passed         int
-	controls       int
-	findings       int
-	processHistory map[Status][]string
+	expectedControls []string
+	total            int
+	failed           int
+	passed           int
+	controls         int
+	findings         int
+	processHistory   map[Status][]string
 }
 
 type Status string
@@ -30,6 +37,12 @@ const (
 func (x *Calculator) resolveIdentifier(finding *Finding, groupBy string) string {
 	switch groupBy {
 	case "Title":
+		for _, control := range x.expectedControls {
+			if strings.HasPrefix(finding.Title, control) {
+				return control
+			}
+		}
+
 		return finding.Title
 	}
 
@@ -40,6 +53,7 @@ func (x *Calculator) ProcessFinding(finding *Finding, groupBy string) {
 	x.findings++
 	status := x.resolveStatus(finding)
 	identifier := x.resolveIdentifier(finding, groupBy)
+	log.Printf("Resolved identifier: %s\n", identifier)
 
 	switch x.hasBeenProcessed(identifier) {
 	// The control has not been processed yet, so we will increment the current status.
@@ -66,7 +80,8 @@ func (x *Calculator) Score() float64 {
 	if x.total == 0 {
 		return float64(100)
 	}
-	return (float64(x.passed) / float64(x.total)) * 100
+
+	return (float64(x.ControlPassedCount()) / float64(x.ControlCount())) * 100
 }
 
 func (x *Calculator) hasBeenProcessed(identifier string) Status {
@@ -99,7 +114,18 @@ func (x *Calculator) resolveStatus(finding *Finding) Status {
 }
 
 func (x *Calculator) ControlCount() int {
+	if len(x.expectedControls) > 0 {
+		x.controls = len(x.expectedControls)
+	}
 	return x.controls
+}
+
+func (x *Calculator) ControlFailedCount() int {
+	return x.failed
+}
+
+func (x *Calculator) ControlPassedCount() int {
+	return x.ControlCount() - x.ControlFailedCount()
 }
 
 func (x *Calculator) FindingCount() int {

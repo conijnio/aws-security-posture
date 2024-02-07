@@ -47,7 +47,7 @@ func (x *Lambda) resolveGroupBy(groupBy string) string {
 	}
 
 	if groupBy == "" {
-		log.Println("No GroupBy value suppllied, we will fallback on the 'GeneratorId'!")
+		log.Println("No GroupBy value supplied, we will fallback on the 'GeneratorId'!")
 		return "GeneratorId"
 	}
 
@@ -80,10 +80,11 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 	findingsReferenceList := append(request.Findings, objectKey)
 
 	return Response{
-		Report:  request.Report,
-		Bucket:  request.Bucket,
-		Filter:  request.Filter,
-		GroupBy: x.resolveGroupBy(request.GroupBy),
+		Report:   request.Report,
+		Bucket:   request.Bucket,
+		Filter:   request.Filter,
+		GroupBy:  x.resolveGroupBy(request.GroupBy),
+		Controls: request.Controls,
 		// Add optional fields for the next iterations
 		Findings:           findingsReferenceList,
 		FindingCount:       len(findingsReferenceList),

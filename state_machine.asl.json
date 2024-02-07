@@ -1,6 +1,42 @@
 {
-  "StartAt": "CollectFindings",
+  "StartAt": "IsConformancePack",
   "States": {
+    "IsConformancePack": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.ConformancePack",
+          "IsPresent": true,
+          "Next": "ConformancePack"
+        }
+      ],
+      "Default": "CollectFindings"
+    },
+    "ConformancePack": {
+      "Type": "Task",
+      "Resource": "${ConformancePackFunction}",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 1
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.DataLimitExceeded",
+            "States.ExceedToleratedFailureThreshold",
+            "States.Permissions"
+          ],
+          "Next": "FailState"
+        }
+      ],
+      "Next": "CollectFindings"
+    },
     "CollectFindings": {
       "Type": "Task",
       "Resource": "${CollectFindingsFunction}",

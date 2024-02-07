@@ -1,0 +1,25 @@
+{
+    "Bucket": "my-sample-bucket",
+    "Report": "aws-foundational-security-best-practices",
+    "ConformancePack": "OrgConformsPack-lz-framework-xxxxxxxx",
+    "Filter": {
+        "Title": [
+            {
+                "Comparison": "PREFIX",
+                "Value" :"lz-"
+            }
+        ],
+        "RecordState": [
+            {
+                "Comparison": "NOT_EQUALS",
+                "Value" :"ARCHIVED"
+            }
+        ],
+        "WorkflowStatus": [
+            {
+                "Comparison": "NOT_EQUALS",
+                "Value" :"SUPPRESSED"
+            }
+        ]
+    }
+}

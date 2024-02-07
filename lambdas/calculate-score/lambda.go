@@ -36,7 +36,7 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 		return response, err
 	}
 
-	calc := NewCalculator()
+	calc := NewCalculator(request.Controls)
 
 	for _, finding := range findings {
 		calc.ProcessFinding(finding, request.GroupBy)
@@ -44,6 +44,8 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 
 	response.Score = calc.Score()
 	response.ControlCount = calc.ControlCount()
+	response.ControlFailedCount = calc.ControlFailedCount()
+	response.ControlPassedCount = calc.ControlPassedCount()
 	response.FindingCount = calc.FindingCount()
 	log.Printf("%d controls (%d Passed and %d Failed)", calc.total, calc.passed, calc.failed)
 	log.Printf("Compliance score is: %.2f%%", response.Score)

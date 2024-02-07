@@ -5,6 +5,7 @@ type Request struct {
 	Timestamp          int64    `json:"Timestamp"`
 	Bucket             string   `json:"Bucket"`
 	GroupBy            string   `json:"GroupBy"`
+	Controls           []string `json:"Controls"`
 	NextToken          string   `json:"NextToken"`
 	FindingCount       int      `json:"FindingCount"`
 	Findings           []string `json:"Findings"`
@@ -12,10 +13,11 @@ type Request struct {
 }
 
 type Account struct {
-	AccountId string `json:"AccountId"`
-	Bucket    string `json:"Bucket"`
-	Key       string `json:"Key"`
-	GroupBy   string `json:"GroupBy"`
+	AccountId string   `json:"AccountId"`
+	Bucket    string   `json:"Bucket"`
+	Key       string   `json:"Key"`
+	GroupBy   string   `json:"GroupBy"`
+	Controls  []string `json:"Controls"`
 }
 
 type Finding struct {

@@ -22,6 +22,11 @@ Parameters:
       - 12 hours
       - 1 day
 
+  ConformancePack:
+    Description: The name of the conformance pack.
+    Type: String
+    Default: ""
+
   RetentionInDays:
     Description: The number of days that the logs should be retained
     Type: String
@@ -59,6 +64,11 @@ Conditions:
   hasPermissionBoundaryArn: !Not
     - !Equals
       - !Ref PermissionBoundaryArn
+      - ""
+
+  hasConformancePack: !Not
+    - !Equals
+      - !Ref ConformancePack
       - ""
 
 Resources:
@@ -154,6 +164,7 @@ Resources:
               - Effect: Allow
                 Action: lambda:InvokeFunction
                 Resource:
+                  - !GetAtt ConformancePackFunction.Arn
                   - !GetAtt CollectFindingsFunction.Arn
                   - !GetAtt AggregateFindingsFunction.Arn
                   - !GetAtt CollectAccountsFunction.Arn
@@ -239,42 +250,70 @@ Resources:
                   ComplianceStatus:
                     - Comparison: NOT_EQUALS
                       Value: NOT_AVAILABLE
-        LandingZoneStandard:
-          Type: ScheduleV2
-          Properties:
-            Name: LandingZoneStandard
-            Description: Collect findings using the specified rate.
-            PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
-            State: ENABLED
-            ScheduleExpression: !Sub rate(${CollectInterval})
-            ScheduleExpressionTimezone: Europe/Amsterdam
-            Input:
-              Fn::ToJsonString:
-                Bucket: !Ref FindingsBucket
-                Report: lz-standard
-                GroupBy: Title
-                Filter:
-                  Title:
-                    - Comparison: PREFIX
-                      Value: lz-
-                  RecordState:
-                    - Comparison: NOT_EQUALS
-                      Value: ARCHIVED
-                  WorkflowStatus:
-                    - Comparison: NOT_EQUALS
-                      Value: SUPPRESSED
-                    - Comparison: NOT_EQUALS
-                      Value: RESOLVED
-                  ComplianceStatus:
-                    - Comparison: NOT_EQUALS
-                      Value: NOT_AVAILABLE
       DefinitionSubstitutions:
+        ConformancePackFunction: !GetAtt ConformancePackFunction.Arn
         CollectFindingsFunction: !GetAtt CollectFindingsFunction.Arn
         AggregateFindingsFunction: !GetAtt AggregateFindingsFunction.Arn
         CollectAccountsFunction: !GetAtt CollectAccountsFunction.Arn
         WorkloadContextFunction: !GetAtt WorkloadContextFunction.Arn
         CalculateScoreFunction: !GetAtt CalculateScoreFunction.Arn
         PublishMetricsFunction: !GetAtt PublishMetricsFunction.Arn
+
+  StateMachineConformancePack:
+    Condition: hasConformancePack
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      ScheduleExpression: !Sub rate(${CollectInterval})
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      Name: !Ref ConformancePack
+      State: ENABLED
+      Description: Collect controls from the conformance pack, to perform accurate calculations
+      ScheduleExpressionTimezone: Europe/Amsterdam
+      Target:
+        Arn: !Ref StateMachine
+        RoleArn: !GetAtt StateMachineConformancePackRole.Arn
+        Input:
+          Fn::ToJsonString:
+            Bucket: !Ref FindingsBucket
+            Report: lz-standard
+            ConformancePack: !Ref ConformancePack
+            Filter:
+              Title:
+                - Comparison: PREFIX
+                  Value: lz-
+              RecordState:
+                - Comparison: NOT_EQUALS
+                  Value: ARCHIVED
+              WorkflowStatus:
+                - Comparison: NOT_EQUALS
+                  Value: SUPPRESSED
+                - Comparison: NOT_EQUALS
+                  Value: RESOLVED
+              ComplianceStatus:
+                - Comparison: NOT_EQUALS
+                  Value: NOT_AVAILABLE
+
+  StateMachineConformancePackRole:
+    Condition: hasConformancePack
+    Type: AWS::IAM::Role
+    Properties:
+      PermissionsBoundary: !If [ hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue ]
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - scheduler.amazonaws.com
+      Policies:
+        - PolicyName: StateMachineAWSBestPracticesStartExecutionPolicy
+          PolicyDocument:
+            Statement:
+              - Action: states:StartExecution
+                Effect: Allow
+                Resource: !Ref StateMachine
 
   StateMachineExecutionsFailedAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -359,6 +398,47 @@ Resources:
           Value: !Ref StateMachine
       Period: 60
       TreatMissingData: notBreaching
+
+  ##################
+  # Conformance Pack
+  ##################
+
+  ConformancePackFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
+      FunctionName: !Sub ${Prefix}-conformance-pack
+      Architectures: [arm64]
+      Runtime: provided.al2
+      CodeUri: ./lambdas/conformance-pack
+      Handler: bootstrap
+      Timeout: 120
+      MemorySize: 8192
+
+  ConformancePackPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Roles:
+        - !Ref ConformancePackFunctionRole
+      PolicyName: !Sub ${Prefix}-conformance-packs
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: s3:PutObject
+            Resource: !Sub ${FindingsBucket.Arn}/*
+          - Effect: Allow
+            Action: securityhub:GetFindings
+            Resource: !Sub arn:aws:securityhub:*:${AWS::AccountId}:hub/default
+
+  ConformancePackLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${ConformancePackFunction}
+      KmsKeyId: !GetAtt KmsKey.Arn
+      RetentionInDays: !Ref RetentionInDays
 
   ##################
   # Collect Findings
