@@ -76,4 +76,23 @@ func TestHandler(t *testing.T) {
 		testtools.VerifyError(err, raiseErr, t)
 		testtools.ExitTest(stubber, t)
 	})
+
+	t.Run("No Bucket or Key", func(t *testing.T) {
+		stubber := testtools.NewStubber()
+		lambda := New(*stubber.SdkConfig)
+
+		eventModified := event
+		eventModified.Bucket = ""
+		eventModified.Key = ""
+		eventModified.Controls = append(eventModified.Controls, "lz-rule-1")
+
+		response, err := lambda.Handler(ctx, eventModified)
+
+		assert.NoError(t, err)
+		assert.Equal(t, 100, int(response.Score))
+		assert.Equal(t, 1, response.ControlPassedCount)
+		assert.Equal(t, 0, response.ControlFailedCount)
+		assert.Equal(t, 1, response.ControlCount)
+		testtools.ExitTest(stubber, t)
+	})
 }

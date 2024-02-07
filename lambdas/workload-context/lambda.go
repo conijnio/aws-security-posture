@@ -23,6 +23,7 @@ func New(cfg aws.Config) *Lambda {
 }
 
 func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error) {
+	accountName := request.AccountName
 	response := Response{
 		AccountId: request.AccountId,
 		Bucket:    request.Bucket,
@@ -31,15 +32,21 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 		Controls:  request.Controls,
 	}
 	x.ctx = ctx
-	log.Printf("Fetching workload context for: %s", request.AccountId)
 
-	account, err := x.client.DescribeAccount(x.ctx, &organizations.DescribeAccountInput{AccountId: aws.String(request.AccountId)})
+	if accountName == "" {
+		log.Printf("Fetching workload context for: %s", request.AccountId)
 
-	if err != nil {
-		return response, err
+		account, err := x.client.DescribeAccount(x.ctx, &organizations.DescribeAccountInput{AccountId: aws.String(request.AccountId)})
+
+		if err != nil {
+			return response, err
+		}
+
+		accountName = *account.Account.Name
 	}
 
-	accountName := x.platformOverwrite(request.AccountId, *account.Account.Name)
+	response.AccountName = accountName
+	accountName = x.platformOverwrite(request.AccountId, accountName)
 	workload, environment, err := x.resolveWorkloadAndEnvironment(accountName)
 	response.Workload = workload
 	response.Environment = environment

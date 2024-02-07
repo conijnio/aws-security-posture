@@ -10,6 +10,7 @@ import (
 	"io"
 	"log"
 	"path/filepath"
+	"sort"
 	"time"
 )
 
@@ -59,9 +60,10 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 		}
 
 		response.Accounts = append(response.Accounts, Account{
-			AccountId: accountId,
-			Bucket:    request.Bucket,
-			Key:       accountObjectKey,
+			AccountId:   accountId,
+			AccountName: x.resolveAccountName(accountFindings),
+			Bucket:      request.Bucket,
+			Key:         accountObjectKey,
 		})
 	}
 
@@ -76,7 +78,24 @@ func (x *Lambda) splitPerAccountId(findings []*Finding) map[string][]*Finding {
 		findingsPerAccount[AwsAccountId] = append(findingsPerAccount[AwsAccountId], finding)
 	}
 
-	return findingsPerAccount
+	return x.sortByAccountId(findingsPerAccount)
+}
+
+func (x *Lambda) sortByAccountId(findingsPerAccount map[string][]*Finding) map[string][]*Finding {
+	var accountIds []string
+
+	for accountId := range findingsPerAccount {
+		accountIds = append(accountIds, accountId)
+	}
+	sort.Strings(accountIds)
+
+	var findingsPerAccountSorted = make(map[string][]*Finding)
+
+	for _, accountId := range accountIds {
+		findingsPerAccountSorted[accountId] = findingsPerAccount[accountId]
+	}
+
+	return findingsPerAccountSorted
 }
 
 func (x *Lambda) downloadFindings(bucket string, keys []string) ([]*Finding, error) {
@@ -140,4 +159,14 @@ func (x *Lambda) resolveBucketKey(accountId string) string {
 		fmt.Sprintf("%02d", t.Day()),
 		fmt.Sprintf("%d.json", t.Unix()),
 	)
+}
+
+func (x *Lambda) resolveAccountName(findings []*Finding) string {
+	for _, finding := range findings {
+		if finding.AwsAccountName != "" {
+			return finding.AwsAccountName
+		}
+	}
+
+	return ""
 }

@@ -79,11 +79,36 @@
       "Choices": [
         {
           "Variable": "$.ConformancePack",
-          "IsPresent": true,
-          "Next": "ConformancePack"
+          "StringEquals": "",
+          "Next": "CalculateAccountScores"
         }
       ],
-      "Default": "CalculateAccountScores"
+      "Default": "FetchAccountMapping"
+    },
+    "FetchAccountMapping": {
+      "Type": "Task",
+      "Resource": "${FetchAccountMappingFunction}",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 1
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.DataLimitExceeded",
+            "States.ExceedToleratedFailureThreshold",
+            "States.Permissions"
+          ],
+          "Next": "FailState"
+        }
+      ],
+      "Next": "ConformancePack"
     },
     "ConformancePack": {
       "Type": "Task",

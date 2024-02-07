@@ -100,12 +100,13 @@ func (x *Lambda) resolveFindings(results *securityhub.GetFindingsOutput) (*Downl
 
 	for _, finding := range results.Findings {
 		allFindings = append(allFindings, &Finding{
-			Id:           *finding.Id,
-			Status:       string(finding.Compliance.Status),
-			ProductArn:   *finding.ProductArn,
-			GeneratorId:  *finding.GeneratorId,
-			AwsAccountId: *finding.AwsAccountId,
-			Title:        *finding.Title,
+			Id:             *finding.Id,
+			Status:         string(finding.Compliance.Status),
+			ProductArn:     *finding.ProductArn,
+			GeneratorId:    *finding.GeneratorId,
+			AwsAccountId:   *finding.AwsAccountId,
+			AwsAccountName: *finding.AwsAccountName,
+			Title:          *finding.Title,
 		})
 	}
 

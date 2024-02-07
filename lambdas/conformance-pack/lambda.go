@@ -28,9 +28,9 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 		Accounts:  []Account{},
 	}
 
+	accountMapping := x.copyAccountMapping(request.AccountMapping)
 	log.Printf("Loading Conformance Pack Context: %s", request.ConformancePack)
 	groupBy := "Title"
-
 	controls, err := x.resolveConfigRules(request.ConformancePack)
 
 	if err != nil {
@@ -39,15 +39,43 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 
 	for _, account := range request.Accounts {
 		response.Accounts = append(response.Accounts, Account{
-			AccountId: account.AccountId,
-			Bucket:    account.Bucket,
-			Key:       account.Key,
-			GroupBy:   groupBy,
-			Controls:  controls,
+			AccountId:   account.AccountId,
+			AccountName: x.resolveAccountName(request, account),
+			Bucket:      account.Bucket,
+			Key:         account.Key,
+			GroupBy:     groupBy,
+			Controls:    controls,
+		})
+
+		delete(accountMapping, account.AccountId)
+	}
+
+	for accountId, accountName := range accountMapping {
+		response.Accounts = append(response.Accounts, Account{
+			AccountId:   accountId,
+			AccountName: accountName,
+			GroupBy:     groupBy,
+			Controls:    controls,
 		})
 	}
 
 	return response, nil
+}
+
+func (x *Lambda) copyAccountMapping(accountMapping map[string]string) map[string]string {
+	var accountMappingCopy = map[string]string{}
+
+	for accountId, accountName := range accountMapping {
+		accountMappingCopy[accountId] = accountName
+	}
+	return accountMappingCopy
+}
+
+func (x *Lambda) resolveAccountName(request Request, account Account) string {
+	if value, ok := request.AccountMapping[account.AccountId]; ok {
+		return value
+	}
+	return ""
 }
 
 func (x *Lambda) resolveConfigRules(conformancePack string) ([]string, error) {

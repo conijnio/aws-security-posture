@@ -1,11 +1,8 @@
 {
     "Bucket": "my-sample-bucket",
     "Report": "aws-foundational-security-best-practices",
-    "ConformancePack": "OrgConformsPack-lz-framework-xxxxxxxx",
     "Timestamp": 1691920532,
-    "AccountMapping": {
-        "111122223333": "acme-workload-development"
-    },
+    "ConformancePack": "ConformancePack",
     "Accounts": [
         {
             "AccountId": "111122223333",

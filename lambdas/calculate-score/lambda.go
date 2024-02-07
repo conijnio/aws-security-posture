@@ -23,6 +23,7 @@ func New(cfg aws.Config) *Lambda {
 func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error) {
 	response := Response{
 		AccountId:   request.AccountId,
+		AccountName: request.AccountName,
 		Workload:    request.Workload,
 		Environment: request.Environment,
 		Score:       0,
@@ -54,13 +55,18 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 }
 
 func (x *Lambda) downloadFindings(bucket string, key string) ([]*Finding, error) {
+	var findings []*Finding
+
+	if bucket == "" || key == "" {
+		return findings, nil
+	}
+
 	data, err := x.downloadFile(bucket, key)
 
 	if err != nil {
 		return []*Finding{}, err
 	}
 
-	var findings []*Finding
 	err = json.Unmarshal(data, &findings)
 	log.Printf("Downloaded %d findings", len(findings))
 

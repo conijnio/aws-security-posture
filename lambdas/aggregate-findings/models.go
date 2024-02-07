@@ -27,10 +27,11 @@ type Response struct {
 }
 
 type Finding struct {
-	Id           string `json:"Id"`
-	Status       string `json:"Status"`
-	ProductArn   string `json:"ProductArn"`
-	GeneratorId  string `json:"GeneratorId"`
-	AwsAccountId string `json:"AwsAccountId"`
-	Title        string `json:"Title"`
+	Id             string `json:"Id"`
+	Status         string `json:"Status"`
+	ProductArn     string `json:"ProductArn"`
+	GeneratorId    string `json:"GeneratorId"`
+	AwsAccountId   string `json:"AwsAccountId"`
+	AwsAccountName string `json:"AwsAccountName"`
+	Title          string `json:"Title"`
 }

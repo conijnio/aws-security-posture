@@ -110,6 +110,10 @@ func TestHandler(t *testing.T) {
 			if account.AccountId != "111122223333" && account.AccountId != "333322221111" {
 				t.Errorf("Expected AccountId to be 111122223333 or 333322221111")
 			}
+
+			if account.AccountName != "acme-workload-development" && account.AccountName != "acme-workload-test" {
+				t.Errorf("Expected AccountName to be acme-workload-development or acme-workload-test")
+			}
 		}
 
 	})
@@ -184,7 +188,7 @@ func TestHandler(t *testing.T) {
 	})
 
 	t.Run("Fail on download", func(t *testing.T) {
-		event := readEvent("../../events/collect-accounts.json")
+		event := readEvent("../../events/split-per-account.json")
 		stubber := testtools.NewStubber()
 		lambda := New(*stubber.SdkConfig)
 		raiseErr := &testtools.StubError{Err: errors.New("failed")}
@@ -200,7 +204,7 @@ func TestHandler(t *testing.T) {
 	})
 
 	t.Run("Fail on upload", func(t *testing.T) {
-		event := readEvent("../../events/collect-accounts.json")
+		event := readEvent("../../events/split-per-account.json")
 		stubber := testtools.NewStubber()
 		lambda := New(*stubber.SdkConfig)
 		raiseErr := &testtools.StubError{Err: errors.New("failed")}

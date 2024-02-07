@@ -165,6 +165,7 @@ Resources:
                 Action: lambda:InvokeFunction
                 Resource:
                   - !GetAtt ConformancePackFunction.Arn
+                  - !GetAtt FetchAccountMappingFunction.Arn
                   - !GetAtt CollectFindingsFunction.Arn
                   - !GetAtt AggregateFindingsFunction.Arn
                   - !GetAtt SplitPerAccountFunction.Arn
@@ -252,6 +253,7 @@ Resources:
                       Value: NOT_AVAILABLE
       DefinitionSubstitutions:
         ConformancePackFunction: !GetAtt ConformancePackFunction.Arn
+        FetchAccountMappingFunction: !GetAtt FetchAccountMappingFunction.Arn
         CollectFindingsFunction: !GetAtt CollectFindingsFunction.Arn
         AggregateFindingsFunction: !GetAtt AggregateFindingsFunction.Arn
         SplitPerAccountFunction: !GetAtt SplitPerAccountFunction.Arn
@@ -438,6 +440,44 @@ Resources:
       RetentionInDays: !Ref RetentionInDays
 
   ##################
+  # Collect Accounts
+  ##################
+
+  FetchAccountMappingFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
+      FunctionName: !Sub ${Prefix}-fetch-account-mapping
+      Architectures: [arm64]
+      Runtime: provided.al2
+      CodeUri: ./lambdas/fetch-account-mapping
+      Handler: bootstrap
+      Timeout: 120
+      MemorySize: 8192
+
+  FetchAccountMappingPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Roles:
+        - !Ref FetchAccountMappingFunctionRole
+      PolicyName: !Sub ${Prefix}-conformance-packs
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: organizations:ListAccounts
+            Resource: "*"
+
+  FetchAccountMappingLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${FetchAccountMappingFunction}
+      KmsKeyId: !GetAtt KmsKey.Arn
+      RetentionInDays: !Ref RetentionInDays
+
+  ##################
   # Collect Findings
   ##################
 
@@ -594,9 +634,6 @@ Resources:
           - Effect: Allow
             Action: organizations:DescribeAccount
             Resource: "*"
-#           Note: the following resource did not work, we need to look into limiting this.
-#            Resource: !Sub arn:aws:organizations::${AWS::AccountId}:account/${OrganizationId}/*
-
   WorkloadContextLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
