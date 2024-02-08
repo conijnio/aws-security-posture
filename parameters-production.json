@@ -1,6 +1,7 @@
 {
     "Parameters": {
-        "CollectInterval" : "12 hours"
+        "CollectInterval" : "12 hours",
+        "ConformancePack": "OrgConformsPack-lz-framework-6cogv2l0"
     },
     "Tags": {},
     "StackPolicy": {

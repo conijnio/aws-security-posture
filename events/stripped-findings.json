@@ -5,6 +5,7 @@
     "ProductArn": "arn:aws:securityhub:eu-west-1::product/aws/securityhub",
     "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.3",
     "AwsAccountId": "111122223333",
+    "AwsAccountName": "acme-workload-development",
     "Title": "4.3 Ensure the default security group of every VPC restricts all traffic"
   },
   {
@@ -22,6 +23,7 @@
     "ProductArn": "arn:aws:securityhub:eu-west-1::product/aws/securityhub",
     "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.3",
     "AwsAccountId": "111122223333",
+    "AwsAccountName": "acme-workload-development",
     "Title": "4.3 Ensure the default security group of every VPC restricts all traffic"
   },
   {
@@ -30,6 +32,7 @@
     "ProductArn": "arn:aws:securityhub:eu-west-1::product/aws/securityhub",
     "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.4",
     "AwsAccountId": "111122223333",
+    "AwsAccountName": "acme-workload-development",
     "Title": "4.3 Ensure the default security group of every VPC restricts all traffic"
   },
   {
@@ -38,6 +41,7 @@
     "ProductArn": "arn:aws:securityhub:eu-west-1::product/aws/securityhub",
     "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.3",
     "AwsAccountId": "333322221111",
+    "AwsAccountName": "acme-workload-test",
     "Title": "4.3 Ensure the default security group of every VPC restricts all traffic"
   },
   {
@@ -46,6 +50,7 @@
     "ProductArn": "arn:aws:securityhub:eu-west-1::product/aws/securityhub",
     "GeneratorId": "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0/rule/4.3",
     "AwsAccountId": "333322221111",
+    "AwsAccountName": "acme-workload-test",
     "Title": "4.3 Ensure the default security group of every VPC restricts all traffic"
   },
   {

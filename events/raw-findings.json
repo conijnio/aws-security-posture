@@ -2,6 +2,7 @@
   {
     "Action": null,
     "AwsAccountId": "111122223333",
+    "AwsAccountName": "acme-workload-development",
     "CompanyName": "AWS",
     "Compliance": {
       "AssociatedStandards": [
@@ -109,6 +110,7 @@
   {
     "Action": null,
     "AwsAccountId": "111122223333",
+    "AwsAccountName": "acme-workload-development",
     "CompanyName": "AWS",
     "Compliance": {
       "AssociatedStandards": [
@@ -216,6 +218,7 @@
   {
     "Action": null,
     "AwsAccountId": "111122223333",
+    "AwsAccountName": "acme-workload-development",
     "CompanyName": "AWS",
     "Compliance": {
       "AssociatedStandards": [
@@ -323,6 +326,7 @@
   {
     "Action": null,
     "AwsAccountId": "111122223333",
+    "AwsAccountName": "acme-workload-development",
     "CompanyName": "AWS",
     "Compliance": {
       "AssociatedStandards": [
@@ -430,6 +434,7 @@
   {
     "Action": null,
     "AwsAccountId": "333322221111",
+    "AwsAccountName": "acme-workload-test",
     "CompanyName": "AWS",
     "Compliance": {
       "AssociatedStandards": [
@@ -537,6 +542,7 @@
   {
     "Action": null,
     "AwsAccountId": "333322221111",
+    "AwsAccountName": "acme-workload-test",
     "CompanyName": "AWS",
     "Compliance": {
       "AssociatedStandards": [
@@ -644,6 +650,7 @@
   {
     "Action": null,
     "AwsAccountId": "333322221111",
+    "AwsAccountName": "acme-workload-test",
     "CompanyName": "AWS",
     "Compliance": {
       "AssociatedStandards": [
