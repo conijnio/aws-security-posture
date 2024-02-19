@@ -31,21 +31,53 @@ The state machine accepts a filter, the format of this filter is the [SecurityHu
 itself. So to get all `CIS AWS Foundations benchmark` findings you can use the following filter:
 
 ```yaml
-GeneratorId:
-  - Comparison: PREFIX
-    Value: arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark
-RecordState:
-  - Comparison: NOT_EQUALS
-    Value: ARCHIVED
-WorkflowStatus:
-  - Comparison: NOT_EQUALS
-    Value: SUPPRESSED
+Bucket: !Ref FindingsBucket
+Report: cis-aws-foundations-benchmark
+Filter:
+   GeneratorId:
+     - Comparison: PREFIX
+       Value: arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark
+   RecordState:
+     - Comparison: NOT_EQUALS
+       Value: ARCHIVED
+   WorkflowStatus:
+     - Comparison: NOT_EQUALS
+       Value: SUPPRESSED
 ```
 
 By default, the following generators are used to generate the compliance scores:
 
 - `arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark`
 - `aws-foundational-security-best-practices`
+
+### Using conformance packs
+
+You can also generate compliance scores based on a conformance pack. You need to supply the conformance pack name.
+And you need to use a common prefix in all of your config rules.
+
+```yaml
+Bucket: !Ref FindingsBucket
+Report: lz-standard
+ConformancePack: !Ref ConformancePack
+Filter:
+  Title:
+    - Comparison: PREFIX
+      Value: lz-
+  RecordState:
+    - Comparison: NOT_EQUALS
+      Value: ARCHIVED
+  WorkflowStatus:
+    - Comparison: NOT_EQUALS
+      Value: SUPPRESSED
+    - Comparison: NOT_EQUALS
+      Value: RESOLVED
+  ComplianceStatus:
+    - Comparison: NOT_EQUALS
+      Value: NOT_AVAILABLE
+```
+
+The name of the conformance pack is used to query all rules in the pack. SecurityHub will only display failed config rules. 
+We need to total number of controls to calculate the actual compliance score. 
 
 ## Getting started
 
