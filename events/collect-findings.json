@@ -1,6 +1,8 @@
 {
     "Bucket": "my-sample-bucket",
     "Report": "aws-foundational-security-best-practices",
+    "Controls": "aws-foundational-security-best-practices/controls/2023/08/13/dfcec91a-9380-11ee-b9d1-0242ac120002.json",
+    "GroupBy": "GeneratorId",
     "Filter": {
         "GeneratorId": [
             {

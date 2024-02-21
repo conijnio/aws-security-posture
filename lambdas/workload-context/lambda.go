@@ -5,49 +5,31 @@ import (
 	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/organizations"
-	"log"
 	"os"
 	"strings"
 )
 
 type Lambda struct {
-	ctx    context.Context
-	client *organizations.Client
+	ctx context.Context
 }
 
 func New(cfg aws.Config) *Lambda {
-	m := new(Lambda)
-	m.client = organizations.NewFromConfig(cfg)
-	return m
+	return new(Lambda)
 }
 
 func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error) {
-	accountName := request.AccountName
 	response := Response{
-		AccountId: request.AccountId,
-		Bucket:    request.Bucket,
-		Key:       request.Key,
-		GroupBy:   request.GroupBy,
-		Controls:  request.Controls,
+		AccountId:   request.AccountId,
+		AccountName: request.AccountName,
+		Bucket:      request.Bucket,
+		Key:         request.Key,
+		GroupBy:     request.GroupBy,
+		Controls:    request.Controls,
 	}
 	x.ctx = ctx
 
-	if accountName == "" {
-		log.Printf("Fetching workload context for: %s", request.AccountId)
-
-		account, err := x.client.DescribeAccount(x.ctx, &organizations.DescribeAccountInput{AccountId: aws.String(request.AccountId)})
-
-		if err != nil {
-			return response, err
-		}
-
-		accountName = *account.Account.Name
-	}
-
-	response.AccountName = accountName
-	accountName = x.platformOverwrite(request.AccountId, accountName)
-	workload, environment, err := x.resolveWorkloadAndEnvironment(accountName)
+	name := x.platformOverwrite(request.AccountId, request.AccountName)
+	workload, environment, err := x.resolveWorkloadAndEnvironment(name)
 	response.Workload = workload
 	response.Environment = environment
 

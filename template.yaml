@@ -164,14 +164,15 @@ Resources:
               - Effect: Allow
                 Action: lambda:InvokeFunction
                 Resource:
+                  - !GetAtt AggregateFindingsFunction.Arn
+                  - !GetAtt CalculateScoreFunction.Arn
+                  - !GetAtt CollectFindingsFunction.Arn
                   - !GetAtt ConformancePackFunction.Arn
                   - !GetAtt FetchAccountMappingFunction.Arn
-                  - !GetAtt CollectFindingsFunction.Arn
-                  - !GetAtt AggregateFindingsFunction.Arn
-                  - !GetAtt SplitPerAccountFunction.Arn
-                  - !GetAtt WorkloadContextFunction.Arn
-                  - !GetAtt CalculateScoreFunction.Arn
                   - !GetAtt PublishMetricsFunction.Arn
+                  - !GetAtt SplitPerAccountFunction.Arn
+                  - !GetAtt SubscriptionFunction.Arn
+                  - !GetAtt WorkloadContextFunction.Arn
 
   StateMachineLogGroup:
     Type: AWS::Logs::LogGroup
@@ -207,22 +208,20 @@ Resources:
             Input:
               Fn::ToJsonString:
                 Bucket: !Ref FindingsBucket
-                Report: aws-foundational-security-best-practices
+                Report: aws-foundational-security-best-practices-v1.0.0
+                SubscriptionArn: !Sub arn:aws:securityhub:${AWS::Region}:${AWS::AccountId}:subscription/aws-foundational-security-best-practices/v/1.0.0
                 Filter:
                   GeneratorId:
                     - Comparison: PREFIX
-                      Value: aws-foundational-security-best-practices
+                      Value: aws-foundational-security-best-practices/v/1.0.0
                   RecordState:
-                    - Comparison: NOT_EQUALS
-                      Value: ARCHIVED
+                    - Comparison: EQUALS
+                      Value: ACTIVE
                   WorkflowStatus:
-                    - Comparison: NOT_EQUALS
-                      Value: SUPPRESSED
-                    - Comparison: NOT_EQUALS
-                      Value: RESOLVED
-                  ComplianceStatus:
-                    - Comparison: NOT_EQUALS
-                      Value: NOT_AVAILABLE
+                    - Comparison: EQUALS
+                      Value: NEW
+                    - Comparison: EQUALS
+                      Value: NOTIFIED
         CISFoundationsBenchmark:
           Type: ScheduleV2
           Properties:
@@ -235,31 +234,30 @@ Resources:
             Input:
               Fn::ToJsonString:
                 Bucket: !Ref FindingsBucket
-                Report: cis-aws-foundations-benchmark
+                Report: cis-aws-foundations-benchmark-v1.2.0
+                SubscriptionArn: !Sub arn:aws:securityhub:${AWS::Region}:${AWS::AccountId}:subscription/cis-aws-foundations-benchmark/v/1.2.0
                 Filter:
                   GeneratorId:
                     - Comparison: PREFIX
-                      Value: arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark
+                      Value: arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0
                   RecordState:
-                    - Comparison: NOT_EQUALS
-                      Value: ARCHIVED
+                    - Comparison: EQUALS
+                      Value: ACTIVE
                   WorkflowStatus:
-                    - Comparison: NOT_EQUALS
-                      Value: SUPPRESSED
-                    - Comparison: NOT_EQUALS
-                      Value: RESOLVED
-                  ComplianceStatus:
-                    - Comparison: NOT_EQUALS
-                      Value: NOT_AVAILABLE
+                    - Comparison: EQUALS
+                      Value: NEW
+                    - Comparison: EQUALS
+                      Value: NOTIFIED
       DefinitionSubstitutions:
+        AggregateFindingsFunction: !GetAtt AggregateFindingsFunction.Arn
+        CalculateScoreFunction: !GetAtt CalculateScoreFunction.Arn
+        CollectFindingsFunction: !GetAtt CollectFindingsFunction.Arn
         ConformancePackFunction: !GetAtt ConformancePackFunction.Arn
         FetchAccountMappingFunction: !GetAtt FetchAccountMappingFunction.Arn
-        CollectFindingsFunction: !GetAtt CollectFindingsFunction.Arn
-        AggregateFindingsFunction: !GetAtt AggregateFindingsFunction.Arn
-        SplitPerAccountFunction: !GetAtt SplitPerAccountFunction.Arn
-        WorkloadContextFunction: !GetAtt WorkloadContextFunction.Arn
-        CalculateScoreFunction: !GetAtt CalculateScoreFunction.Arn
         PublishMetricsFunction: !GetAtt PublishMetricsFunction.Arn
+        SplitPerAccountFunction: !GetAtt SplitPerAccountFunction.Arn
+        SubscriptionFunction: !GetAtt SubscriptionFunction.Arn
+        WorkloadContextFunction: !GetAtt WorkloadContextFunction.Arn
 
   StateMachineConformancePack:
     Condition: hasConformancePack
@@ -285,16 +283,13 @@ Resources:
                 - Comparison: PREFIX
                   Value: lz-
               RecordState:
-                - Comparison: NOT_EQUALS
-                  Value: ARCHIVED
+                - Comparison: EQUALS
+                  Value: ACTIVE
               WorkflowStatus:
-                - Comparison: NOT_EQUALS
-                  Value: SUPPRESSED
-                - Comparison: NOT_EQUALS
-                  Value: RESOLVED
-              ComplianceStatus:
-                - Comparison: NOT_EQUALS
-                  Value: NOT_AVAILABLE
+                - Comparison: EQUALS
+                  Value: NEW
+                - Comparison: EQUALS
+                  Value: NOTIFIED
 
   StateMachineConformancePackRole:
     Condition: hasConformancePack
@@ -401,79 +396,84 @@ Resources:
       Period: 60
       TreatMissingData: notBreaching
 
-  ##################
-  # Conformance Pack
-  ##################
+  ####################
+  # Aggregate Findings
+  ####################
 
-  ConformancePackFunction:
+  AggregateFindingsFunction:
     Type: AWS::Serverless::Function
     Metadata:
       BuildMethod: makefile
     Properties:
       PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
-      FunctionName: !Sub ${Prefix}-conformance-pack
+      FunctionName: !Sub ${Prefix}-aggregate-findings
       Architectures: [arm64]
       Runtime: provided.al2
-      CodeUri: ./lambdas/conformance-pack
+      CodeUri: ./lambdas/aggregate-findings
       Handler: bootstrap
-      Timeout: 120
-      MemorySize: 8192
+      Timeout: 300  # 5 Minutes, collect current findings and merge them
+      MemorySize: 1024
 
-  ConformancePackPolicy:
+  AggregateFindingsPolicy:
     Type: AWS::IAM::Policy
     Properties:
       Roles:
-        - !Ref ConformancePackFunctionRole
-      PolicyName: !Sub ${Prefix}-conformance-packs
+        - !Ref AggregateFindingsFunctionRole
+      PolicyName: !Sub ${Prefix}-aggregate-findings
       PolicyDocument:
         Version: 2012-10-17
         Statement:
           - Effect: Allow
-            Action: config:GetConformancePackComplianceDetails
-            Resource: "*" #!Sub arn:aws:config:${AWS::Region}:${AWS::AccountId}:conformance-pack/${ConformancePack}/*
+            Action:
+              - s3:PutObject
+              - s3:GetObject
+            Resource: !Sub ${FindingsBucket.Arn}/*
+          - Effect: Allow
+            Action: securityhub:GetFindings
+            Resource: !Sub arn:aws:securityhub:*:${AWS::AccountId}:hub/default
 
-  ConformancePackLogGroup:
+  AggregateFindingsLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/lambda/${ConformancePackFunction}
+      LogGroupName: !Sub /aws/lambda/${AggregateFindingsFunction}
       KmsKeyId: !GetAtt KmsKey.Arn
       RetentionInDays: !Ref RetentionInDays
 
-  ##################
-  # Collect Accounts
-  ##################
+  #################
+  # Calculate Score
+  #################
 
-  FetchAccountMappingFunction:
+  CalculateScoreFunction:
     Type: AWS::Serverless::Function
     Metadata:
       BuildMethod: makefile
     Properties:
       PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
-      FunctionName: !Sub ${Prefix}-fetch-account-mapping
+      FunctionName: !Sub ${Prefix}-calculate-score
       Architectures: [arm64]
       Runtime: provided.al2
-      CodeUri: ./lambdas/fetch-account-mapping
+      CodeUri: ./lambdas/calculate-score
       Handler: bootstrap
-      Timeout: 120
-      MemorySize: 8192
+      Timeout: 60  # 1 Minute, this function gets a specific per account payload.
+      MemorySize: 2048
 
-  FetchAccountMappingPolicy:
+  CalculateScorePolicy:
     Type: AWS::IAM::Policy
     Properties:
       Roles:
-        - !Ref FetchAccountMappingFunctionRole
-      PolicyName: !Sub ${Prefix}-conformance-packs
+        - !Ref CalculateScoreFunctionRole
+      PolicyName: !Sub ${Prefix}-read-access-findings-bucket
       PolicyDocument:
         Version: 2012-10-17
         Statement:
           - Effect: Allow
-            Action: organizations:ListAccounts
-            Resource: "*"
+            Action: s3:GetObject
+            Resource: !Sub ${FindingsBucket.Arn}/*
 
-  FetchAccountMappingLogGroup:
+  CalculateScoreLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/lambda/${FetchAccountMappingFunction}
+      LogGroupName: !Sub /aws/lambda/${CalculateScoreFunction}
       KmsKeyId: !GetAtt KmsKey.Arn
       RetentionInDays: !Ref RetentionInDays
 
@@ -518,46 +518,120 @@ Resources:
       KmsKeyId: !GetAtt KmsKey.Arn
       RetentionInDays: !Ref RetentionInDays
 
-  ####################
-  # Aggregate Findings
-  ####################
+  ##################
+  # Conformance Pack
+  ##################
 
-  AggregateFindingsFunction:
+  ConformancePackFunction:
     Type: AWS::Serverless::Function
     Metadata:
       BuildMethod: makefile
     Properties:
       PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
-      FunctionName: !Sub ${Prefix}-aggregate-findings
+      FunctionName: !Sub ${Prefix}-conformance-pack
       Architectures: [arm64]
       Runtime: provided.al2
-      CodeUri: ./lambdas/aggregate-findings
+      CodeUri: ./lambdas/conformance-pack
       Handler: bootstrap
-      Timeout: 300  # 5 Minutes, collect current findings and merge them
-      MemorySize: 1024
+      Timeout: 120
+      MemorySize: 8192
 
-  AggregateFindingsPolicy:
+  ConformancePackPolicy:
     Type: AWS::IAM::Policy
     Properties:
       Roles:
-        - !Ref AggregateFindingsFunctionRole
-      PolicyName: !Sub ${Prefix}-aggregate-findings
+        - !Ref ConformancePackFunctionRole
+      PolicyName: !Sub ${Prefix}-conformance-packs
       PolicyDocument:
         Version: 2012-10-17
         Statement:
           - Effect: Allow
-            Action:
-              - s3:PutObject
-              - s3:GetObject
-            Resource: !Sub ${FindingsBucket.Arn}/*
+            Action: config:GetConformancePackComplianceDetails
+            Resource: "*" #!Sub arn:aws:config:${AWS::Region}:${AWS::AccountId}:conformance-pack/${ConformancePack}/*
           - Effect: Allow
-            Action: securityhub:GetFindings
-            Resource: !Sub arn:aws:securityhub:*:${AWS::AccountId}:hub/default
+            Action: s3:PutObject
+            Resource: !Sub ${FindingsBucket.Arn}/*
 
-  AggregateFindingsLogGroup:
+  ConformancePackLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/lambda/${AggregateFindingsFunction}
+      LogGroupName: !Sub /aws/lambda/${ConformancePackFunction}
+      KmsKeyId: !GetAtt KmsKey.Arn
+      RetentionInDays: !Ref RetentionInDays
+
+  #######################
+  # Fetch Account Mapping
+  #######################
+
+  FetchAccountMappingFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
+      FunctionName: !Sub ${Prefix}-fetch-account-mapping
+      Architectures: [arm64]
+      Runtime: provided.al2
+      CodeUri: ./lambdas/fetch-account-mapping
+      Handler: bootstrap
+      Timeout: 120
+      MemorySize: 8192
+
+  FetchAccountMappingPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Roles:
+        - !Ref FetchAccountMappingFunctionRole
+      PolicyName: !Sub ${Prefix}-conformance-packs
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: organizations:ListAccounts
+            Resource: "*"
+
+  FetchAccountMappingLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${FetchAccountMappingFunction}
+      KmsKeyId: !GetAtt KmsKey.Arn
+      RetentionInDays: !Ref RetentionInDays
+
+  #################
+  # Publish Metrics
+  #################
+
+  PublishMetricsFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
+      FunctionName: !Sub ${Prefix}-publish-metrics
+      Architectures: [ arm64 ]
+      Runtime: provided.al2
+      CodeUri: ./lambdas/publish-metrics
+      Handler: bootstrap
+      Timeout: 60  # 1 Minute, we publish all metrics one by one for now
+      MemorySize: 2048
+
+  PublishMetricsPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Roles:
+        - !Ref PublishMetricsFunctionRole
+      PolicyName: !Sub ${Prefix}-publish-metrics
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: cloudwatch:PutMetricData
+            Resource: "*"
+
+  PublishMetricsLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${PublishMetricsFunction}
       KmsKeyId: !GetAtt KmsKey.Arn
       RetentionInDays: !Ref RetentionInDays
 
@@ -601,6 +675,55 @@ Resources:
       KmsKeyId: !GetAtt KmsKey.Arn
       RetentionInDays: !Ref RetentionInDays
 
+  ##############
+  # Subscription
+  ##############
+
+  SubscriptionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${Prefix}-subscription
+      KmsKeyId: !GetAtt KmsKey.Arn
+      RetentionInDays: !Ref RetentionInDays
+
+  SubscriptionFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
+      FunctionName: !Sub ${Prefix}-subscription
+      LoggingConfig:
+        SystemLogLevel: DEBUG
+        ApplicationLogLevel: TRACE
+        LogGroup: !Ref SubscriptionLogGroup
+        LogFormat: JSON
+      Architectures: [ arm64 ]
+      Runtime: provided.al2
+      CodeUri: ./lambdas/subscription
+      Handler: bootstrap
+      Timeout: 60  # 1 Minute, we are only fetching the account name.
+      MemorySize: 128
+      Environment:
+        Variables:
+          PLATFORM_ACCOUNTS: !Ref PlatformAccounts
+
+  SubscriptionPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Roles:
+        - !Ref SubscriptionFunctionRole
+      PolicyName: !Sub ${Prefix}-subscription
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: securityhub:DescribeStandardsControls
+            Resource: !Sub arn:aws:securityhub:${AWS::Region}:${AWS::AccountId}:hub/default
+          - Effect: Allow
+            Action: s3:PutObject
+            Resource: !Sub ${FindingsBucket.Arn}/*
+
   ##################
   # Workload Context
   ##################
@@ -641,81 +764,8 @@ Resources:
       KmsKeyId: !GetAtt KmsKey.Arn
       RetentionInDays: !Ref RetentionInDays
 
-  ###############
-  # Collect Score
-  ###############
 
-  CalculateScoreFunction:
-    Type: AWS::Serverless::Function
-    Metadata:
-      BuildMethod: makefile
-    Properties:
-      PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
-      FunctionName: !Sub ${Prefix}-calculate-score
-      Architectures: [arm64]
-      Runtime: provided.al2
-      CodeUri: ./lambdas/calculate-score
-      Handler: bootstrap
-      Timeout: 60  # 1 Minute, this function gets a specific per account payload.
-      MemorySize: 2048
 
-  CalculateScorePolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      Roles:
-        - !Ref CalculateScoreFunctionRole
-      PolicyName: !Sub ${Prefix}-read-access-findings-bucket
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Action: s3:GetObject
-            Resource: !Sub ${FindingsBucket.Arn}/*
-
-  CalculateScoreLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/lambda/${CalculateScoreFunction}
-      KmsKeyId: !GetAtt KmsKey.Arn
-      RetentionInDays: !Ref RetentionInDays
-
-  #################
-  # Publish Metrics
-  #################
-
-  PublishMetricsFunction:
-    Type: AWS::Serverless::Function
-    Metadata:
-      BuildMethod: makefile
-    Properties:
-      PermissionsBoundary: !If [hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue]
-      FunctionName: !Sub ${Prefix}-publish-metrics
-      Architectures: [ arm64 ]
-      Runtime: provided.al2
-      CodeUri: ./lambdas/publish-metrics
-      Handler: bootstrap
-      Timeout: 60  # 1 Minute, we publish all metrics one by one for now
-      MemorySize: 2048
-
-  PublishMetricsPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      Roles:
-        - !Ref PublishMetricsFunctionRole
-      PolicyName: !Sub ${Prefix}-publish-metrics
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Action: cloudwatch:PutMetricData
-            Resource: "*"
-
-  PublishMetricsLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/lambda/${PublishMetricsFunction}
-      KmsKeyId: !GetAtt KmsKey.Arn
-      RetentionInDays: !Ref RetentionInDays
 
   #########
   # KMS Key

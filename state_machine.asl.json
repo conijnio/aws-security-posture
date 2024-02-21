@@ -1,6 +1,92 @@
 {
-  "StartAt": "CollectFindings",
+  "StartAt": "DetectProcess",
   "States": {
+    "DetectProcess": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "And": [
+            {
+              "Variable": "$.SubscriptionArn",
+              "IsPresent": true
+            },
+            {
+              "Not": {
+                "Variable": "$.SubscriptionArn",
+                "StringEquals": ""
+              }
+            }
+          ],
+          "Next": "Subscription"
+        },
+        {
+          "And": [
+            {
+              "Variable": "$.ConformancePack",
+              "IsPresent": true
+            },
+            {
+              "Not": {
+                "Variable": "$.ConformancePack",
+                "StringEquals": ""
+              }
+            }
+          ],
+          "Next": "ConformancePack"
+        }
+      ],
+      "Default": "FailState"
+    },
+    "Subscription": {
+      "Type": "Task",
+      "Resource": "${SubscriptionFunction}",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 1
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.DataLimitExceeded",
+            "States.ExceedToleratedFailureThreshold",
+            "States.Permissions"
+          ],
+          "Next": "FailState"
+        }
+      ],
+      "Next": "CollectFindings"
+    },
+    "ConformancePack": {
+      "Type": "Task",
+      "Resource": "${ConformancePackFunction}",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 1
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.DataLimitExceeded",
+            "States.ExceedToleratedFailureThreshold",
+            "States.Permissions"
+          ],
+          "Next": "FailState"
+        }
+      ],
+      "Next": "CollectFindings"
+    },
     "CollectFindings": {
       "Type": "Task",
       "Resource": "${CollectFindingsFunction}",
@@ -72,47 +158,11 @@
           "Next": "FailState"
         }
       ],
-      "Next": "IsConformancePack"
-    },
-    "IsConformancePack": {
-      "Type": "Choice",
-      "Choices": [
-        {
-          "Variable": "$.ConformancePack",
-          "StringEquals": "",
-          "Next": "CalculateAccountScores"
-        }
-      ],
-      "Default": "FetchAccountMapping"
+      "Next": "FetchAccountMapping"
     },
     "FetchAccountMapping": {
       "Type": "Task",
       "Resource": "${FetchAccountMappingFunction}",
-      "Retry": [
-        {
-          "ErrorEquals": [
-            "States.ALL"
-          ],
-          "IntervalSeconds": 1,
-          "MaxAttempts": 3,
-          "BackoffRate": 1
-        }
-      ],
-      "Catch": [
-        {
-          "ErrorEquals": [
-            "States.DataLimitExceeded",
-            "States.ExceedToleratedFailureThreshold",
-            "States.Permissions"
-          ],
-          "Next": "FailState"
-        }
-      ],
-      "Next": "ConformancePack"
-    },
-    "ConformancePack": {
-      "Type": "Task",
-      "Resource": "${ConformancePackFunction}",
       "Retry": [
         {
           "ErrorEquals": [

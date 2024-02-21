@@ -28,6 +28,11 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 		Environment: request.Environment,
 		Score:       0,
 	}
+
+	if request.Bucket == "" || request.Key == "" || request.Controls == "" {
+		return response, nil
+	}
+
 	x.ctx = ctx
 	log.Printf("Calculating the security score for: %s", request.AccountId)
 
@@ -37,7 +42,12 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 		return response, err
 	}
 
-	calc := NewCalculator(request.Controls)
+	controls, err := x.downloadControls(request.Bucket, request.Controls)
+	if err != nil {
+		return response, err
+	}
+
+	calc := NewCalculator(controls)
 
 	for _, finding := range findings {
 		calc.ProcessFinding(finding, request.GroupBy)
@@ -54,12 +64,23 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 	return response, err
 }
 
+func (x *Lambda) downloadControls(bucket string, key string) ([]string, error) {
+	var controls []string
+
+	data, err := x.downloadFile(bucket, key)
+
+	if err != nil {
+		return controls, err
+	}
+
+	err = json.Unmarshal(data, &controls)
+	log.Printf("Downloaded %d controls", len(controls))
+
+	return controls, err
+}
+
 func (x *Lambda) downloadFindings(bucket string, key string) ([]*Finding, error) {
 	var findings []*Finding
-
-	if bucket == "" || key == "" {
-		return findings, nil
-	}
 
 	data, err := x.downloadFile(bucket, key)
 

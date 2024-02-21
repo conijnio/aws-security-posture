@@ -49,10 +49,11 @@ func TestHandler(t *testing.T) {
 	t.Run("Read raw findings and split based on AccountId", func(t *testing.T) {
 
 		event := Request{
-			Bucket:       "my-sample-bucket",
-			Report:       "aws-foundational-security-best-practices",
-			Timestamp:    1691920532,
-			FindingCount: 3,
+			Bucket:    "my-sample-bucket",
+			Report:    "aws-foundational-security-best-practices",
+			Controls:  "aws-foundational-security-best-practices/controls/2023/08/13/dfcec91a-9380-11ee-b9d1-0242ac120002.json",
+			GroupBy:   "GeneratorId",
+			Timestamp: 1691920532,
 			Findings: []string{
 				"aws-foundational-security-best-practices/raw/2023/08/13/dfcec91a-9380-11ee-b9d1-0242ac120002.json",
 				"aws-foundational-security-best-practices/raw/2023/08/13/e43e3ef4-9380-11ee-b9d1-0242ac120002.json",
@@ -114,16 +115,20 @@ func TestHandler(t *testing.T) {
 			if account.AccountName != "acme-workload-development" && account.AccountName != "acme-workload-test" {
 				t.Errorf("Expected AccountName to be acme-workload-development or acme-workload-test")
 			}
+
+			assert.Equal(t, event.Controls, account.Controls)
+			assert.Equal(t, event.GroupBy, account.GroupBy)
 		}
 
 	})
 
 	t.Run("Read 2 raw findings and 1 aggregated and split based on AccountId", func(t *testing.T) {
 		event := Request{
-			Bucket:       "my-sample-bucket",
-			Report:       "aws-foundational-security-best-practices",
-			Timestamp:    1691920532,
-			FindingCount: 2,
+			Bucket:    "my-sample-bucket",
+			Report:    "aws-foundational-security-best-practices",
+			Controls:  "aws-foundational-security-best-practices/controls/2023/08/13/dfcec91a-9380-11ee-b9d1-0242ac120002.json",
+			GroupBy:   "GeneratorId",
+			Timestamp: 1691920532,
 			Findings: []string{
 				"aws-foundational-security-best-practices/raw/2023/08/13/e43e3ef4-9380-11ee-b9d1-0242ac120002.json",
 				"aws-foundational-security-best-practices/raw/2023/08/13/e88c8e3e-9380-11ee-b9d1-0242ac120002.json",
@@ -183,6 +188,12 @@ func TestHandler(t *testing.T) {
 			if account.AccountId != "111122223333" && account.AccountId != "333322221111" {
 				t.Errorf("Expected AccountId to be 111122223333 or 333322221111")
 			}
+
+			if account.Controls != event.Controls {
+				t.Errorf("Expected Controls to be %s", event.Controls)
+			}
+
+			assert.Equal(t, "GeneratorId", account.GroupBy)
 		}
 
 	})

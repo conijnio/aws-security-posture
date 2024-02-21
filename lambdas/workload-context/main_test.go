@@ -3,10 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"errors"
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/organizations"
-	"github.com/aws/aws-sdk-go-v2/service/organizations/types"
 	"github.com/awsdocs/aws-doc-sdk-examples/gov2/testtools"
 	"github.com/stretchr/testify/assert"
 	"os"
@@ -17,7 +13,7 @@ func readEvent(path string) Request {
 	file, _ := os.ReadFile(path)
 
 	var event Request
-	json.Unmarshal(file, &event)
+	_ = json.Unmarshal(file, &event)
 	return event
 }
 
@@ -25,35 +21,10 @@ func TestHandler(t *testing.T) {
 	ctx := context.Background()
 	event := readEvent("../../events/workload-context.json")
 
-	t.Run("Fail on DescribeAccount", func(t *testing.T) {
-		stubber := testtools.NewStubber()
-		lambda := New(*stubber.SdkConfig)
-		raiseErr := &testtools.StubError{Err: errors.New("failed")}
-		stubber.Add(testtools.Stub{
-			OperationName: "DescribeAccount",
-			Input: &organizations.DescribeAccountInput{
-				AccountId: aws.String(event.AccountId),
-			},
-			Error: raiseErr,
-		})
-
-		_, err := lambda.Handler(ctx, event)
-		testtools.VerifyError(err, raiseErr, t)
-		testtools.ExitTest(stubber, t)
-	})
-
 	t.Run("Get Workload Context", func(t *testing.T) {
 		stubber := testtools.NewStubber()
 
-		stubber.Add(testtools.Stub{
-			OperationName: "DescribeAccount",
-			Input: &organizations.DescribeAccountInput{
-				AccountId: aws.String(event.AccountId),
-			},
-			Output: &organizations.DescribeAccountOutput{
-				Account: &types.Account{Name: aws.String("prefix-my-workload-development")},
-			},
-		})
+		event.AccountName = "prefix-my-workload-development"
 
 		lambda := New(*stubber.SdkConfig)
 		response, err := lambda.Handler(ctx, event)
@@ -101,20 +72,12 @@ func TestHandler(t *testing.T) {
 		_ = os.Setenv("PLATFORM_ACCOUNTS", "666655554444,333322221111")
 		logPrefixEvent := readEvent("../../events/workload-context.json")
 		logPrefixEvent.AccountId = "666655554444"
+		logPrefixEvent.AccountName = "prefix-log-archive"
+
 		stubber := testtools.NewStubber()
-
-		stubber.Add(testtools.Stub{
-			OperationName: "DescribeAccount",
-			Input: &organizations.DescribeAccountInput{
-				AccountId: aws.String(logPrefixEvent.AccountId),
-			},
-			Output: &organizations.DescribeAccountOutput{
-				Account: &types.Account{Name: aws.String("prefix-log-archive")},
-			},
-		})
-
 		lambda := New(*stubber.SdkConfig)
 		response, err := lambda.Handler(ctx, logPrefixEvent)
+
 		testtools.ExitTest(stubber, t)
 		assert.NoError(t, err)
 		assert.Equal(t, logPrefixEvent.Bucket, response.Bucket)
@@ -130,20 +93,12 @@ func TestHandler(t *testing.T) {
 		_ = os.Setenv("PLATFORM_ACCOUNTS", "666655554444,333322221111")
 		sharedServicesEvent := readEvent("../../events/workload-context.json")
 		sharedServicesEvent.AccountId = "333322221111"
+		sharedServicesEvent.AccountName = "prefix-shared-services"
+
 		stubber := testtools.NewStubber()
-
-		stubber.Add(testtools.Stub{
-			OperationName: "DescribeAccount",
-			Input: &organizations.DescribeAccountInput{
-				AccountId: aws.String(sharedServicesEvent.AccountId),
-			},
-			Output: &organizations.DescribeAccountOutput{
-				Account: &types.Account{Name: aws.String("prefix-shared-services")},
-			},
-		})
-
 		lambda := New(*stubber.SdkConfig)
 		response, err := lambda.Handler(ctx, sharedServicesEvent)
+
 		testtools.ExitTest(stubber, t)
 		assert.NoError(t, err)
 		assert.Equal(t, sharedServicesEvent.Bucket, response.Bucket)
@@ -157,20 +112,12 @@ func TestHandler(t *testing.T) {
 
 	t.Run("Get Workload Context from workload with PLATFORM_ACCOUNTS config", func(t *testing.T) {
 		_ = os.Setenv("PLATFORM_ACCOUNTS", "666655554444,333322221111")
+		event.AccountName = "prefix-my-workload-development"
+
 		stubber := testtools.NewStubber()
-
-		stubber.Add(testtools.Stub{
-			OperationName: "DescribeAccount",
-			Input: &organizations.DescribeAccountInput{
-				AccountId: aws.String(event.AccountId),
-			},
-			Output: &organizations.DescribeAccountOutput{
-				Account: &types.Account{Name: aws.String("prefix-my-workload-development")},
-			},
-		})
-
 		lambda := New(*stubber.SdkConfig)
 		response, err := lambda.Handler(ctx, event)
+
 		testtools.ExitTest(stubber, t)
 		assert.NoError(t, err)
 		assert.Equal(t, event.Bucket, response.Bucket)

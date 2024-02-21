@@ -30,11 +30,10 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 	x.ctx = context.WithValue(ctx, "request", request)
 
 	response := Response{
-		Report:          request.Report,
-		Bucket:          request.Bucket,
-		ConformancePack: request.ConformancePack,
-		Accounts:        []Account{},
-		Timestamp:       request.Timestamp,
+		Report:    request.Report,
+		Bucket:    request.Bucket,
+		Accounts:  []Account{},
+		Timestamp: request.Timestamp,
 	}
 
 	aggregatedFindings, err := x.downloadFindings(request.Bucket, request.AggregatedFindings)
@@ -64,6 +63,8 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 			AccountName: x.resolveAccountName(accountFindings),
 			Bucket:      request.Bucket,
 			Key:         accountObjectKey,
+			Controls:    request.Controls,
+			GroupBy:     request.GroupBy,
 		})
 	}
 

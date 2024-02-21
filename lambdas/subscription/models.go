@@ -5,7 +5,7 @@ import "github.com/aws/aws-sdk-go-v2/service/securityhub/types"
 type Request struct {
 	Report          string                          `json:"Report"`
 	Bucket          string                          `json:"Bucket"`
-	ConformancePack string                          `json:"ConformancePack"`
+	SubscriptionArn string                          `json:"SubscriptionArn"`
 	Filter          types.AwsSecurityFindingFilters `json:"Filter"`
 }
 

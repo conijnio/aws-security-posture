@@ -6,25 +6,25 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/configservice"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/securityhub"
+	"github.com/aws/aws-sdk-go-v2/service/securityhub/types"
 	"github.com/gofrs/uuid"
 	"log"
 	"path/filepath"
 	"sort"
-	"strings"
 	"time"
 )
 
 type Lambda struct {
 	ctx      context.Context
-	client   *configservice.Client
+	client   *securityhub.Client
 	s3Client *s3.Client
 }
 
 func New(cfg aws.Config) *Lambda {
 	m := new(Lambda)
-	m.client = configservice.NewFromConfig(cfg)
+	m.client = securityhub.NewFromConfig(cfg)
 	m.s3Client = s3.NewFromConfig(cfg)
 	return m
 }
@@ -35,12 +35,13 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 		Report:   request.Report,
 		Bucket:   request.Bucket,
 		Controls: x.resolveBucketKey("controls", request.Report),
-		GroupBy:  "Title",
+		GroupBy:  "GeneratorId",
 		Filter:   request.Filter,
 	}
 
-	log.Printf("Loading Conformance Pack Context: %s", request.ConformancePack)
-	controls, err := x.resolveConfigRules(request.ConformancePack)
+	log.Printf("Loading control based on SubscriptionArn: %s", request.SubscriptionArn)
+
+	controls, err := x.resolveConfigRules(request.SubscriptionArn)
 	controlsData, err := json.Marshal(controls)
 
 	if err != nil {
@@ -48,13 +49,15 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 	}
 
 	err = x.uploadFile(request.Bucket, response.Controls, controlsData)
+
 	return response, err
 }
 
-func (x *Lambda) resolveConfigRules(conformancePack string) ([]string, error) {
-	paginator := configservice.NewGetConformancePackComplianceDetailsPaginator(x.client, &configservice.GetConformancePackComplianceDetailsInput{
-		ConformancePackName: aws.String(conformancePack),
-		Limit:               100,
+func (x *Lambda) resolveConfigRules(subscriptionArn string) ([]string, error) {
+
+	paginator := securityhub.NewDescribeStandardsControlsPaginator(x.client, &securityhub.DescribeStandardsControlsInput{
+		StandardsSubscriptionArn: aws.String(subscriptionArn),
+		MaxResults:               aws.Int32(100),
 	})
 
 	var encountered = map[string]bool{}
@@ -65,10 +68,10 @@ func (x *Lambda) resolveConfigRules(conformancePack string) ([]string, error) {
 		if err != nil {
 			return []string{}, err
 		}
-		for _, value := range output.ConformancePackRuleEvaluationResults {
-			parts := strings.Split(*value.EvaluationResultIdentifier.EvaluationResultQualifier.ConfigRuleName, "-")
-			control := strings.Join(parts[:len(parts)-1], "-")
-			encountered[control] = true
+		for _, value := range output.Controls {
+			if value.ControlStatus == types.ControlStatusEnabled {
+				encountered[*value.StandardsControlArn] = true
+			}
 		}
 		pageNum++
 	}

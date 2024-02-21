@@ -2,6 +2,7 @@
   "AccountId": "111122223333",
   "Bucket": "my-sample-bucket",
   "Key": "aws-foundational-security-best-practices/111122223333/2023/08/13/111111111111.json",
+  "Controls": "aws-foundational-security-best-practices/controls/2023/08/13/dfcec91a-9380-11ee-b9d1-0242ac120002.json",
   "Workload": "my-workload",
   "Environment": "development"
 }

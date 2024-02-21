@@ -62,13 +62,24 @@ func TestHandler(t *testing.T) {
 		response, err := lambda.Handler(ctx, event)
 		testtools.ExitTest(stubber, t)
 		assert.NoError(t, err)
-		assert.Equal(t, event.ConformancePack, response.ConformancePack)
-		assert.Equal(t, 1, len(response.Accounts))
-		assert.Equal(t, 5, len(response.AccountMapping))
-		assert.Equal(t, "acme-workload-build", response.AccountMapping["111111111111"])
-		assert.Equal(t, "acme-workload-development", response.AccountMapping["111122223333"])
-		assert.Equal(t, "acme-workload-test", response.AccountMapping["111111111113"])
-		assert.Equal(t, "acme-workload-acceptance", response.AccountMapping["111111111114"])
-		assert.Equal(t, "acme-workload-production", response.AccountMapping["111111111115"])
+		assert.Equal(t, 5, len(response.Accounts))
+
+		for _, account := range response.Accounts {
+			if account.AccountId == "111111111111" {
+				assert.Equal(t, "acme-workload-build", account.AccountName)
+			}
+			if account.AccountId == "111122223333" {
+				assert.Equal(t, "acme-workload-development", account.AccountName)
+			}
+			if account.AccountId == "111111111113" {
+				assert.Equal(t, "acme-workload-test", account.AccountName)
+			}
+			if account.AccountId == "111111111114" {
+				assert.Equal(t, "acme-workload-acceptance", account.AccountName)
+			}
+			if account.AccountId == "111111111115" {
+				assert.Equal(t, "acme-workload-production", account.AccountName)
+			}
+		}
 	})
 }

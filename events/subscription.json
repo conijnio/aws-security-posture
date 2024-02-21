@@ -1,0 +1,5 @@
+{
+    "Bucket": "my-sample-bucket",
+    "Report": "aws-foundational-security-best-practices",
+    "SubscriptionArn": "arn:aws:securityhub:eu-central-1:000000000000:subscription/cis-aws-foundations-benchmark/v/1.2.0"
+}

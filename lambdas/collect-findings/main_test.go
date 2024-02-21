@@ -109,6 +109,7 @@ func TestHandler(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, event.Report, response.Report)
 		assert.Equal(t, event.Bucket, response.Bucket)
+		assert.Equal(t, event.GroupBy, response.GroupBy)
 		regex, _ := regexp.Compile(fmt.Sprintf("%s/raw/[0-9]{4}/[0-9]{2}/[0-9]{2}/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}.json", response.Report))
 
 		if regex.FindAllString(response.Findings[0], -1) == nil {
@@ -296,6 +297,7 @@ func TestAggregationPassing(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, event.Report, response.Report)
 		assert.Equal(t, event.Bucket, response.Bucket)
+		assert.Equal(t, event.Controls, response.Controls)
 		assert.Equal(t, 0, len(response.AggregatedFindings))
 	})
 
@@ -337,6 +339,7 @@ func TestAggregationPassing(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, event.Report, response.Report)
 		assert.Equal(t, event.Bucket, response.Bucket)
+		assert.Equal(t, event.Controls, response.Controls)
 		assert.Equal(t, 3, response.FindingCount)
 		assert.Equal(t, 3, len(response.Findings))
 		assert.Equal(t, 2, len(response.AggregatedFindings))

@@ -19,30 +19,63 @@ func New(cfg aws.Config) *Lambda {
 
 func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error) {
 	x.ctx = ctx
+
 	response := Response{
-		Report:          request.Report,
-		Bucket:          request.Bucket,
-		Timestamp:       request.Timestamp,
-		ConformancePack: request.ConformancePack,
-		Accounts:        request.Accounts,
-		AccountMapping:  map[string]string{},
+		Report:    request.Report,
+		Bucket:    request.Bucket,
+		Timestamp: request.Timestamp,
+		Accounts:  []Account{},
 	}
 
+	controls := request.Accounts[0].Controls
+	mapping, err := x.resolveMapping()
+
+	if err != nil {
+		return response, err
+	}
+
+	for accountId, accountName := range mapping {
+		found := false
+		for _, account := range request.Accounts {
+			if account.AccountId == accountId {
+				if account.AccountName == "" {
+					account.AccountName = accountName
+				}
+				found = true
+				response.Accounts = append(response.Accounts, account)
+				break
+			}
+		}
+
+		if !found {
+			response.Accounts = append(response.Accounts, Account{
+				AccountId:   accountId,
+				AccountName: accountName,
+				Controls:    controls,
+			})
+		}
+	}
+
+	return response, nil
+}
+
+func (x *Lambda) resolveMapping() (map[string]string, error) {
 	paginator := organizations.NewListAccountsPaginator(x.client, &organizations.ListAccountsInput{
 		MaxResults: aws.Int32(20),
 	})
 
+	mapping := map[string]string{}
 	pageNum := 0
 	for paginator.HasMorePages() {
 		output, err := paginator.NextPage(context.TODO())
 		if err != nil {
-			return response, err
+			return mapping, err
 		}
 		for _, account := range output.Accounts {
-			response.AccountMapping[*account.Id] = *account.Name
+			mapping[*account.Id] = *account.Name
 		}
 		pageNum++
 	}
 
-	return response, nil
+	return mapping, nil
 }

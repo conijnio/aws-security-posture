@@ -8,6 +8,7 @@ use (
 	./lambdas/conformance-pack
 	./lambdas/publish-metrics
 	./lambdas/split-per-account
+	./lambdas/subscription
 	./lambdas/workload-context
 	.
 )

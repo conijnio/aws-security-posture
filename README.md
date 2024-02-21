@@ -1,5 +1,9 @@
 # AWS Security Posture - Solution
 
+> TODO: Deploy from local CodeBuild is broken?
+> TODO: Move control fetching in the beginning
+> TODO: Support control count from input 
+
 [AWS Security Posture](http://github.com/conijnio/aws-security-posture) collects security hub findings on a configurable interval, and extracts meaningful metrics. These metrics are stored in CloudWatch Metrics and can be visualized using CloudWatch DashBoards.
 
 ![AWS StepFunctions Example](./assets/images/dashboard_example.png)
@@ -17,7 +21,7 @@ You can easily change this to your own setup.
 ![AWS StepFunctions Example](./assets/images/state_machine.png)
 
 1. Use the given filter to retrieve all findings, we are fetching 100 findings per invocation.
-2. When there is a `NextToken` we need to collect the rest of the findings. 
+2. When there is a `NextToken` we need to collect the rest of the findings.
 3. Check if the fetched findings need to be aggregated. (repeat this until we have all findings)
 4. Split the findings per AWS Account ID.
 5. In parallel, we will now:
@@ -32,23 +36,26 @@ itself. So to get all `CIS AWS Foundations benchmark` findings you can use the f
 
 ```yaml
 Bucket: !Ref FindingsBucket
-Report: cis-aws-foundations-benchmark
+Report: cis-aws-foundations-benchmark-v1.2.0
+SubscriptionArn: !Sub arn:aws:securityhub:${AWS::Region}:${AWS::AccountId}:subscription/cis-aws-foundations-benchmark/v/1.2.0
 Filter:
    GeneratorId:
      - Comparison: PREFIX
-       Value: arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark
+       Value: arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0
    RecordState:
-     - Comparison: NOT_EQUALS
-       Value: ARCHIVED
+      - Comparison: EQUALS
+        Value: ACTIVE
    WorkflowStatus:
-     - Comparison: NOT_EQUALS
-       Value: SUPPRESSED
+      - Comparison: EQUALS
+        Value: NEW
+      - Comparison: EQUALS
+        Value: NOTIFIED
 ```
 
 By default, the following generators are used to generate the compliance scores:
 
-- `arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark`
-- `aws-foundational-security-best-practices`
+- `arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0`
+- `aws-foundational-security-best-practices/v/1.0.0`
 
 ### Using conformance packs
 
@@ -64,20 +71,17 @@ Filter:
     - Comparison: PREFIX
       Value: lz-
   RecordState:
-    - Comparison: NOT_EQUALS
-      Value: ARCHIVED
+    - Comparison: EQUALS
+      Value: ACTIVE
   WorkflowStatus:
-    - Comparison: NOT_EQUALS
-      Value: SUPPRESSED
-    - Comparison: NOT_EQUALS
-      Value: RESOLVED
-  ComplianceStatus:
-    - Comparison: NOT_EQUALS
-      Value: NOT_AVAILABLE
+    - Comparison: EQUALS
+      Value: NEW
+    - Comparison: EQUALS
+      Value: NOTIFIED
 ```
 
-The name of the conformance pack is used to query all rules in the pack. SecurityHub will only display failed config rules. 
-We need to total number of controls to calculate the actual compliance score. 
+The name of the conformance pack is used to query all rules in the pack. SecurityHub will only display failed config rules.
+We need to total number of controls to calculate the actual compliance score.
 
 ## Getting started
 

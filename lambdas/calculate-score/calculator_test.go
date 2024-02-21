@@ -183,4 +183,23 @@ func TestCalculator(t *testing.T) {
 		assert.Equal(t, 2, calc.ControlFailedCount())
 		assert.Equal(t, 4, calc.FindingCount())
 	})
+
+	t.Run("Handle 5 control with generatorId multiple failures", func(t *testing.T) {
+		calc := NewCalculator([]string{
+			"control-1",
+			"control-2",
+			"control-3",
+			"control-4",
+			"control-5",
+		})
+		calc.ProcessFinding(generateFinding("control-1", types.ComplianceStatusWarning), "GeneratorId")
+		calc.ProcessFinding(generateFinding("control-1", types.ComplianceStatusWarning), "GeneratorId")
+		calc.ProcessFinding(generateFinding("control-2", types.ComplianceStatusWarning), "GeneratorId")
+		calc.ProcessFinding(generateFinding("control-2", types.ComplianceStatusWarning), "GeneratorId")
+		assert.Equal(t, 60, int(calc.Score()))
+		assert.Equal(t, 5, calc.ControlCount())
+		assert.Equal(t, 3, calc.ControlPassedCount())
+		assert.Equal(t, 2, calc.ControlFailedCount())
+		assert.Equal(t, 4, calc.FindingCount())
+	})
 }

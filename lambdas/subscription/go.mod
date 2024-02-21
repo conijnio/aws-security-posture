@@ -1,4 +1,4 @@
-module calculate-score
+module subscription
 
 go 1.20
 
@@ -7,8 +7,9 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.25.1
 	github.com/aws/aws-sdk-go-v2/config v1.27.2
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.50.3
-	github.com/aws/aws-sdk-go-v2/service/securityhub v1.43.2
+	github.com/aws/aws-sdk-go-v2/service/securityhub v1.45.2
 	github.com/awsdocs/aws-doc-sdk-examples/gov2/testtools v0.0.0-20230929172021-f4d62c78cc98
+	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/stretchr/testify v1.8.4
 )
 

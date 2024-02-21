@@ -61,10 +61,11 @@ func (x *Lambda) Handler(ctx context.Context, request Request) (Response, error)
 	findingsReferenceList := append(request.Findings, objectKey)
 
 	return Response{
-		Report:          request.Report,
-		Bucket:          request.Bucket,
-		Filter:          request.Filter,
-		ConformancePack: request.ConformancePack,
+		Report:   request.Report,
+		Bucket:   request.Bucket,
+		Filter:   request.Filter,
+		Controls: request.Controls,
+		GroupBy:  request.GroupBy,
 		// Add optional fields for the next iterations
 		Findings:           findingsReferenceList,
 		FindingCount:       len(findingsReferenceList),
@@ -128,9 +129,6 @@ func (x *Lambda) uploadFile(bucket string, key string, data []byte) error {
 		Key:    aws.String(key),
 		Body:   bytes.NewReader(data),
 	})
-
-	viewData := string(data)
-	log.Printf(viewData)
 
 	return err
 }

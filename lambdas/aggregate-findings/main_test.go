@@ -12,6 +12,7 @@ import (
 	"github.com/awsdocs/aws-doc-sdk-examples/gov2/testtools"
 	"github.com/stretchr/testify/assert"
 	"io"
+	"os"
 	"testing"
 )
 
@@ -61,7 +62,16 @@ func toReadCloser(findings []Finding) io.ReadCloser {
 	return io.NopCloser(toReader(findings))
 }
 
+func readEvent(path string) Request {
+	file, _ := os.ReadFile(path)
+
+	var event Request
+	_ = json.Unmarshal(file, &event)
+	return event
+}
+
 func TestHandler(t *testing.T) {
+	event := readEvent("../../events/aggregate-findings.json")
 
 	t.Run("Aggregate 2 Findings", func(t *testing.T) {
 
@@ -69,17 +79,6 @@ func TestHandler(t *testing.T) {
 		firstBatch := generateFindings("first", 10)
 		secondBatch := generateFindings("second", 10)
 		expectedBatch := append(firstBatch, secondBatch...)
-
-		event := Request{
-			Bucket:       "my-sample-bucket",
-			Report:       "aws-foundational-security-best-practices",
-			Filter:       *GetFilters("aws-foundational-security-best-practices"),
-			FindingCount: 2,
-			Findings: []string{
-				"my/first/batch.json",
-				"my/second/batch.json",
-			},
-		}
 
 		stubber := testtools.NewStubber()
 		lambda := New(*stubber.SdkConfig)
@@ -105,6 +104,8 @@ func TestHandler(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, event.Report, response.Report)
 		assert.Equal(t, event.Bucket, response.Bucket)
+		assert.Equal(t, event.Controls, response.Controls)
+		assert.Equal(t, event.GroupBy, response.GroupBy)
 		assert.Equal(t, 0, response.FindingCount)
 		assert.Equal(t, 0, len(response.Findings))
 		assert.Equal(t, 1, len(response.AggregatedFindings))
@@ -114,17 +115,6 @@ func TestHandler(t *testing.T) {
 
 		ctx := context.Background()
 		firstBatch := generateFindings("first", 10)
-
-		event := Request{
-			Bucket:       "my-sample-bucket",
-			Report:       "aws-foundational-security-best-practices",
-			Filter:       *GetFilters("aws-foundational-security-best-practices"),
-			FindingCount: 1,
-			Findings: []string{
-				"my/first/batch.json",
-				"my/second/batch.json",
-			},
-		}
 
 		stubber := testtools.NewStubber()
 		lambda := New(*stubber.SdkConfig)
@@ -151,17 +141,6 @@ func TestHandler(t *testing.T) {
 		firstBatch := generateFindings("first", 10)
 		secondBatch := generateFindings("second", 10)
 		expectedBatch := append(firstBatch, secondBatch...)
-
-		event := Request{
-			Bucket:       "my-sample-bucket",
-			Report:       "aws-foundational-security-best-practices",
-			Filter:       *GetFilters("aws-foundational-security-best-practices"),
-			FindingCount: 1,
-			Findings: []string{
-				"my/first/batch.json",
-				"my/second/batch.json",
-			},
-		}
 
 		stubber := testtools.NewStubber()
 		lambda := New(*stubber.SdkConfig)

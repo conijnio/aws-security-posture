@@ -1,5 +1,7 @@
 SHELL := /bin/bash
-PROJECT_NAME=security-posture
+ENVIRONMENT := production
+PROJECT_NAME=aws-security-posture
+STACK_NAME = $(PROJECT_NAME)-$(ENVIRONMENT)
 
 include .env
 
@@ -77,9 +79,9 @@ validate: ## Validate the SAM template
 
 .PHONY: deploy
 deploy: check-profile check-region ## Deploy the solution
-	$(info [+] Deploy solution: $(PROJECT_NAME))
+	$(info [+] Deploy solution: $(STACK_NAME))
 	sam deploy -t .aws-sam/build/template.yaml \
-		--stack-name $(PROJECT_NAME) \
+		--stack-name $(STACK_NAME) \
 		--capabilities=CAPABILITY_IAM CAPABILITY_NAMED_IAM \
 		--region=$(AWS_REGION) \
 		--s3-bucket cf-templates-1tw6xuuyelyb4-$(AWS_REGION) \
@@ -90,9 +92,9 @@ deploy: check-profile check-region ## Deploy the solution
 
 .PHONY: delete
 delete: check-region ## Delete the solution
-	$(info [+] Deleting solution: $(PROJECT_NAME))
+	$(info [+] Deleting solution: $(STACK_NAME))
 	aws cloudformation delete-stack \
-		--stack-name $(PROJECT_NAME) \
+		--stack-name $(STACK_NAME) \
 		--region=$(AWS_REGION) \
 
 .PHONY: tidy

@@ -4,9 +4,8 @@ type Request struct {
 	Report             string   `json:"Report"`
 	Timestamp          int64    `json:"Timestamp"`
 	Bucket             string   `json:"Bucket"`
-	ConformancePack    string   `json:"ConformancePack"`
-	NextToken          string   `json:"NextToken"`
-	FindingCount       int      `json:"FindingCount"`
+	Controls           string   `json:"Controls"`
+	GroupBy            string   `json:"GroupBy"`
 	Findings           []string `json:"Findings"`
 	AggregatedFindings []string `json:"AggregatedFindings"`
 }
@@ -16,6 +15,8 @@ type Account struct {
 	AccountName string `json:"AccountName"`
 	Bucket      string `json:"Bucket"`
 	Key         string `json:"Key"`
+	Controls    string `json:"Controls"`
+	GroupBy     string `json:"GroupBy"`
 }
 
 type Finding struct {
@@ -29,9 +30,8 @@ type Finding struct {
 }
 
 type Response struct {
-	Report          string    `json:"Report"`
-	Timestamp       int64     `json:"Timestamp"`
-	Bucket          string    `json:"Bucket"`
-	ConformancePack string    `json:"ConformancePack"`
-	Accounts        []Account `json:"Accounts"`
+	Report    string    `json:"Report"`
+	Timestamp int64     `json:"Timestamp"`
+	Bucket    string    `json:"Bucket"`
+	Accounts  []Account `json:"Accounts"`
 }
