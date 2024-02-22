@@ -1,9 +1,5 @@
 # AWS Security Posture - Solution
 
-> TODO: Deploy from local CodeBuild is broken?
-> TODO: Move control fetching in the beginning
-> TODO: Support control count from input 
-
 [AWS Security Posture](http://github.com/conijnio/aws-security-posture) collects security hub findings on a configurable interval, and extracts meaningful metrics. These metrics are stored in CloudWatch Metrics and can be visualized using CloudWatch DashBoards.
 
 ![AWS StepFunctions Example](./assets/images/dashboard_example.png)
@@ -66,6 +62,36 @@ And you need to use a common prefix in all of your config rules.
 Bucket: !Ref FindingsBucket
 Report: lz-standard
 ConformancePack: !Ref ConformancePack
+Filter:
+  Title:
+    - Comparison: PREFIX
+      Value: lz-
+  RecordState:
+    - Comparison: EQUALS
+      Value: ACTIVE
+  WorkflowStatus:
+    - Comparison: EQUALS
+      Value: NEW
+    - Comparison: EQUALS
+      Value: NOTIFIED
+```
+
+The name of the conformance pack is used to query all rules in the pack. SecurityHub will only display failed config rules.
+We need to total number of controls to calculate the actual compliance score.
+
+### Using custom rules
+
+You can also generate compliance scores based on a custom rules. You need to supply the list of rules that are part of your report.
+And you need to use a common prefix in all of your config rules.
+
+```yaml
+Bucket: !Ref FindingsBucket
+Report: lz-standard
+CustomRules:
+   - lz-my-rule-1
+   - lz-my-rule-2
+   - lz-my-rule-3
+   - lz-my-rule-4
 Filter:
   Title:
     - Comparison: PREFIX

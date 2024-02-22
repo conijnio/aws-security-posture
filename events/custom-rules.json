@@ -1,0 +1,27 @@
+{
+  "Bucket": "my-sample-bucket",
+  "Report": "my-security-framework",
+  "CustomRules": [
+    "lz-rule-1", "lz-rule-2", "lz-rule-3", "lz-rule-4"
+  ],
+  "Filter": {
+    "Title": [
+      {
+        "Comparison": "PREFIX",
+        "Value" :"lz-"
+      }
+    ],
+    "RecordState": [
+      {
+        "Comparison": "NOT_EQUALS",
+        "Value" :"ARCHIVED"
+      }
+    ],
+    "WorkflowStatus": [
+      {
+        "Comparison": "NOT_EQUALS",
+        "Value" :"SUPPRESSED"
+      }
+    ]
+  }
+}

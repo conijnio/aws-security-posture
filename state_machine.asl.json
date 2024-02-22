@@ -33,6 +33,11 @@
             }
           ],
           "Next": "ConformancePack"
+        },
+        {
+          "Variable": "$.CustomRules",
+          "IsPresent": true,
+          "Next": "CustomRules"
         }
       ],
       "Default": "FailState"
@@ -40,6 +45,31 @@
     "Subscription": {
       "Type": "Task",
       "Resource": "${SubscriptionFunction}",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 1
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.DataLimitExceeded",
+            "States.ExceedToleratedFailureThreshold",
+            "States.Permissions"
+          ],
+          "Next": "FailState"
+        }
+      ],
+      "Next": "CollectFindings"
+    },
+    "CustomRules": {
+      "Type": "Task",
+      "Resource": "${CustomRulesFunction}",
       "Retry": [
         {
           "ErrorEquals": [

@@ -6,6 +6,7 @@ use (
 	./lambdas/fetch-account-mapping
 	./lambdas/collect-findings
 	./lambdas/conformance-pack
+	./lambdas/custom-rules
 	./lambdas/publish-metrics
 	./lambdas/split-per-account
 	./lambdas/subscription

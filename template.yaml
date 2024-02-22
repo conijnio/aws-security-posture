@@ -168,6 +168,7 @@ Resources:
                   - !GetAtt CalculateScoreFunction.Arn
                   - !GetAtt CollectFindingsFunction.Arn
                   - !GetAtt ConformancePackFunction.Arn
+                  - !GetAtt CustomRulesFunction.Arn
                   - !GetAtt FetchAccountMappingFunction.Arn
                   - !GetAtt PublishMetricsFunction.Arn
                   - !GetAtt SplitPerAccountFunction.Arn
@@ -253,6 +254,7 @@ Resources:
         CalculateScoreFunction: !GetAtt CalculateScoreFunction.Arn
         CollectFindingsFunction: !GetAtt CollectFindingsFunction.Arn
         ConformancePackFunction: !GetAtt ConformancePackFunction.Arn
+        CustomRulesFunction: !GetAtt CustomRulesFunction.Arn
         FetchAccountMappingFunction: !GetAtt FetchAccountMappingFunction.Arn
         PublishMetricsFunction: !GetAtt PublishMetricsFunction.Arn
         SplitPerAccountFunction: !GetAtt SplitPerAccountFunction.Arn
@@ -559,6 +561,52 @@ Resources:
       KmsKeyId: !GetAtt KmsKey.Arn
       RetentionInDays: !Ref RetentionInDays
 
+  ##############
+  # Custom Rules
+  ##############
+
+  CustomRulesLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${Prefix}-custom-rules
+      KmsKeyId: !GetAtt KmsKey.Arn
+      RetentionInDays: !Ref RetentionInDays
+
+  CustomRulesFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      PermissionsBoundary: !If [ hasPermissionBoundaryArn, !Ref PermissionBoundaryArn, !Ref AWS::NoValue ]
+      FunctionName: !Sub ${Prefix}-custom-rules
+      LoggingConfig:
+        SystemLogLevel: DEBUG
+        ApplicationLogLevel: TRACE
+        LogGroup: !Ref CustomRulesLogGroup
+        LogFormat: JSON
+      Architectures: [ arm64 ]
+      Runtime: provided.al2
+      CodeUri: ./lambdas/custom-rules
+      Handler: bootstrap
+      Timeout: 60  # 1 Minute, we are only fetching the account name.
+      MemorySize: 128
+      Environment:
+        Variables:
+          PLATFORM_ACCOUNTS: !Ref PlatformAccounts
+
+  CustomRulesPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Roles:
+        - !Ref CustomRulesFunctionRole
+      PolicyName: !Sub ${Prefix}-custom-rules
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action: s3:PutObject
+            Resource: !Sub ${FindingsBucket.Arn}/*
+
   #######################
   # Fetch Account Mapping
   #######################
@@ -763,9 +811,6 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${WorkloadContextFunction}
       KmsKeyId: !GetAtt KmsKey.Arn
       RetentionInDays: !Ref RetentionInDays
-
-
-
 
   #########
   # KMS Key
