@@ -1,6 +1,6 @@
 module github.com/nr18/aws-security-posture
 
-go 1.20
+go 1.21
 
 require github.com/boumenot/gocover-cobertura v1.2.0
 
