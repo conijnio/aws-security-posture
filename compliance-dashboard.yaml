@@ -35,11 +35,11 @@ Resources:
               type: metric
               properties:
                 metrics:
-                  - [SecurityPosture, Score, Report, cis-aws-foundations-benchmark, Environment, build, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region]
-                  - [SecurityPosture, Score, Report, cis-aws-foundations-benchmark, Environment, development, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region]
-                  - [SecurityPosture, Score, Report, cis-aws-foundations-benchmark, Environment, test, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region]
-                  - [SecurityPosture, Score, Report, cis-aws-foundations-benchmark, Environment, acceptance, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region]
-                  - [SecurityPosture, Score, Report, cis-aws-foundations-benchmark, Environment, production, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region]
+                  - [SecurityPosture, Score, Report, cis-aws-foundations-benchmark-v1.2.0, Environment, build, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region]
+                  - [SecurityPosture, Score, Report, cis-aws-foundations-benchmark-v1.2.0, Environment, development, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region]
+                  - [SecurityPosture, Score, Report, cis-aws-foundations-benchmark-v1.2.0, Environment, test, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region]
+                  - [SecurityPosture, Score, Report, cis-aws-foundations-benchmark-v1.2.0, Environment, acceptance, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region]
+                  - [SecurityPosture, Score, Report, cis-aws-foundations-benchmark-v1.2.0, Environment, production, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region]
                 view: gauge
                 stacked: false
                 region: !Ref AWS::Region
@@ -76,11 +76,11 @@ Resources:
                 legend:
                   position: bottom
                 metrics:
-                  - [ SecurityPosture, Score, Report, aws-foundational-security-best-practices, Environment, build, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
-                  - [ SecurityPosture, Score, Report, aws-foundational-security-best-practices, Environment, development, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
-                  - [ SecurityPosture, Score, Report, aws-foundational-security-best-practices, Environment, test, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
-                  - [ SecurityPosture, Score, Report, aws-foundational-security-best-practices, Environment, acceptance, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
-                  - [ SecurityPosture, Score, Report, aws-foundational-security-best-practices, Environment, production, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Score, Report, aws-foundational-security-best-practices-v1.0.0, Environment, build, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Score, Report, aws-foundational-security-best-practices-v1.0.0, Environment, development, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Score, Report, aws-foundational-security-best-practices-v1.0.0, Environment, test, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Score, Report, aws-foundational-security-best-practices-v1.0.0, Environment, acceptance, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Score, Report, aws-foundational-security-best-practices-v1.0.0, Environment, production, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
                 view: gauge
                 stacked: false
                 region: !Ref AWS::Region
@@ -114,11 +114,11 @@ Resources:
                 legend:
                   position: right
                 metrics:
-                  - [ SecurityPosture, Findings, Report, cis-aws-foundations-benchmark, Environment, build, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
-                  - [ SecurityPosture, Findings, Report, cis-aws-foundations-benchmark, Environment, development, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
-                  - [ SecurityPosture, Findings, Report, cis-aws-foundations-benchmark, Environment, test, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
-                  - [ SecurityPosture, Findings, Report, cis-aws-foundations-benchmark, Environment, acceptance, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
-                  - [ SecurityPosture, Findings, Report, cis-aws-foundations-benchmark, Environment, production, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Findings, Report, cis-aws-foundations-benchmark-v1.2.0, Environment, build, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Findings, Report, cis-aws-foundations-benchmark-v1.2.0, Environment, development, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Findings, Report, cis-aws-foundations-benchmark-v1.2.0, Environment, test, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Findings, Report, cis-aws-foundations-benchmark-v1.2.0, Environment, acceptance, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Findings, Report, cis-aws-foundations-benchmark-v1.2.0, Environment, production, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
                 view: timeSeries
                 stacked: false
                 region: !Ref AWS::Region
@@ -134,11 +134,11 @@ Resources:
                 legend:
                   position: right
                 metrics:
-                  - [ SecurityPosture, Findings, Report, aws-foundational-security-best-practices, Environment, build, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
-                  - [ SecurityPosture, Findings, Report, aws-foundational-security-best-practices, Environment, development, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
-                  - [ SecurityPosture, Findings, Report, aws-foundational-security-best-practices, Environment, test, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
-                  - [ SecurityPosture, Findings, Report, aws-foundational-security-best-practices, Environment, acceptance, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
-                  - [ SecurityPosture, Findings, Report, aws-foundational-security-best-practices, Environment, production, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Findings, Report, aws-foundational-security-best-practices-v1.0.0, Environment, build, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Findings, Report, aws-foundational-security-best-practices-v1.0.0, Environment, development, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Findings, Report, aws-foundational-security-best-practices-v1.0.0, Environment, test, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Findings, Report, aws-foundational-security-best-practices-v1.0.0, Environment, acceptance, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
+                  - [ SecurityPosture, Findings, Report, aws-foundational-security-best-practices-v1.0.0, Environment, production, Workload, !Ref WorkloadMetricName, region: !Ref AWS::Region ]
                 view: timeSeries
                 stacked: false
                 region: !Ref AWS::Region
